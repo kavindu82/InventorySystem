@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Add Supplier</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/add_supplier.css}">
+</head>
+<body>
+<!-- ✅ Header -->
+<div class="header">
+    <div class="logo">
+        <img src="/images/logo.png" alt="Logo">
+        <h5 class="mb-0">DULANJALEE ENTERPRISES & MOTORS</h5>
+    </div>
+    <div class="text-end">
+        <span th:text="'👤 ' + ${#authentication.name}"></span>
+    </div>
+</div>
+
+<!-- ✅ Sidebar + Main Content -->
+<div class="d-flex">
+    <nav class="sidebar p-3">
+        <h5 class="fw-bold">Menu</h5>
+        <ul class="nav flex-column">
+            <li class="nav-item mt-2"><a class="nav-link" th:href="@{/dashboard}">🏠 Dashboard</a></li>
+            <li class="nav-item mt-2">
+                <span class="fw-bold">ITEM</span>
+                <ul class="nav flex-column ms-3">
+                    <li><a class="nav-link" th:href="@{/item/add}">Add Item</a></li>
+                    <li><a class="nav-link" th:href="@{/item/invoice}">Add Invoice Item</a></li>
+                </ul>
+            </li>
+            <li class="nav-item mt-3">
+                <span class="fw-bold">SUPPLIER</span>
+                <ul class="nav flex-column ms-3">
+                    <li><a class="nav-link active" th:href="@{/supplier/add}">Add Supplier</a></li>
+                </ul>
+            </li>
+            <li class="nav-item mt-3">
+                <span class="fw-bold">SALES</span>
+                <ul class="nav flex-column ms-3">
+                    <li><a class="nav-link" th:href="@{/sales/add}">Add Sale</a></li>
+                    <li><a class="nav-link" th:href="@{/sales/reports}">Sales Reports</a></li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container p-4">
+        <h2>Add Supplier</h2>
+
+        <!-- Alerts -->
+        <div th:if="${param.success}" class="alert alert-success fade-out" role="alert" th:switch="${param.success}">
+            <span th:if="${param.success[0] == 'add'}">✅ Supplier added successfully!</span>
+            <span th:if="${param.success[0] == 'update'}">✏️ Supplier updated successfully!</span>
+            <span th:if="${param.success[0] == 'delete'}">🗑️ Supplier deleted successfully!</span>
+        </div>
+        <div th:if="${duplicate}" class="alert alert-danger fade-out" role="alert">
+            ❌ This supplier already exists!
+        </div>
+
+        <!-- Supplier Form -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <form th:action="@{/supplier/save}" th:object="${supplier}" method="post">
+                    <input type="hidden" th:field="*{supplierCode}" />
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label>Supplier Name</label>
+                            <input type="text" th:field="*{supplierName}" class="form-control" required oninput="this.value = this.value.toUpperCase()">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label>Supplier Address</label>
+                            <input type="text" th:field="*{supplierAddress}" class="form-control" required oninput="this.value = this.value.toUpperCase()">
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" type="submit">Save Supplier</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Search -->
+        <div class="mb-3">
+           <input type="text" id="supplierSearch" class="form-control " placeholder="Search by Code or Name">
+        </div>
+        <!-- Supplier Table -->
+        <div class="card">
+            <div class="card-body p-0 table-responsive">
+                <table class="table table-striped table-hover mb-0" id="supplierTable">
+                    <thead class="table-dark">
+                    <tr>
+                        <th>Supplier Code</th>
+                        <th>Supplier Name</th>
+                        <th>Supplier Address</th>
+                        <th>Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="s : ${supplierList}">
+                        <td th:text="${s.supplierCode}"></td>
+                        <td th:text="${s.supplierName}"></td>
+                        <td th:text="${s.supplierAddress}"></td>
+                        <td>
+                            <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editModal"
+                                    th:attr="data-code=${s.supplierCode}, data-name=${s.supplierName}, data-address=${s.supplierAddress}"
+                                    onclick="fillEditModal(this)">✏️</button>
+                            <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal"
+                                    th:attr="data-code=${s.supplierCode}" onclick="prepareDelete(this)">🗑️</button>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <form th:action="@{/supplier/save}" method="post" class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editModalLabel">Edit Supplier</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" name="supplierCode" id="editCode">
+                <div class="mb-3">
+                    <label>Supplier Name</label>
+                    <input type="text" class="form-control" name="supplierName" id="editName" required>
+                </div>
+                <div class="mb-3">
+                    <label>Supplier Address</label>
+                    <input type="text" class="form-control" name="supplierAddress" id="editAddress" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" type="submit">Update</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <form id="deleteForm" method="get" class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete this supplier?
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-danger">Yes, Delete</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script th:src="@{/js/add_supplier.js}"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

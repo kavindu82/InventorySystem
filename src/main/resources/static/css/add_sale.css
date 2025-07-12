@@ -1,0 +1,36 @@
+.header {
+    background-color: #ffcc00;
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.header img {
+    height: 40px;
+    width: 40px;
+    object-fit: cover;
+    border-radius: 50%;
+}
+.fade-out {
+    animation: fadeOut 4s forwards;
+}
+@keyframes fadeOut {
+    0% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { opacity: 0; display: none; }
+}
+.sidebar {
+    background-color: #fff8cc;
+    height: 100vh;
+    width: 250px;
+}
+
+.sidebar .nav-link {
+    color: #000;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.sidebar .nav-link:hover {
+    background-color: #ffe680;
+    border-radius: 5px;
+}
