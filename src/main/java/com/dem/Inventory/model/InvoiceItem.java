@@ -1,9 +1,6 @@
 package com.dem.Inventory.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -23,15 +20,18 @@ public class InvoiceItem {
     private String itemName;
     private String itemType;
     private String supplierName;
-
+    @Column(nullable = false)
     private int quantity;
     private String importSizeAndDimension;
     private double costPrice;
     private double sellingPrice;
-
-    private String number;
+    @Column(nullable = false)
+    private int lowQuantity;
     private LocalDate arrivalDate;
     private double amount;
+    private String currency;  // e.g., USD, CNY, LKR
+    private Double originalCostPrice;  // in foreign currency
+
 }
 
 

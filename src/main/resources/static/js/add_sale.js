@@ -6,19 +6,22 @@ function addSaleItemRow(item = {}) {
     const row = document.createElement("tr");
 
     row.innerHTML = `
-        <td>
-            <select name="items[${saleItemIndex}].itemNo" class="form-select" onchange="fetchItemDetails(this)" required>
-                <option value="">--Select Item--</option>
-            </select>
-        </td>
-        <td><input type="text" name="items[${saleItemIndex}].itemName" class="form-control" readonly value="${item.itemName || ''}"></td>
-        <td>
-            <input type="number" name="items[${saleItemIndex}].quantity" class="form-control" required oninput="updateSaleAmount(this)" value="${item.quantity || ''}">
-            <div class="text-muted small available-stock"></div>
-        </td>
-        <td><input type="number" name="items[${saleItemIndex}].sellingPrice" class="form-control" readonly value="${item.sellingPrice || ''}"></td>
-        <td><input type="number" name="items[${saleItemIndex}].amount" class="form-control" readonly value="${item.amount || ''}"></td>
-        <td><button type="button" class="btn btn-danger btn-sm" onclick="removeSaleItemRow(this)">🗑️</button></td>
+     <tr>
+    <input type="hidden" name="items[${saleItemIndex}].id" value="${item.id || ''}">
+    <td>
+        <select name="items[${saleItemIndex}].itemNo" class="form-select" onchange="fetchItemDetails(this)" required>
+            <option value="">--Select Item--</option>
+        </select>
+    </td>
+    <td><input type="text" name="items[${saleItemIndex}].itemName" class="form-control" readonly value="${item.itemName || ''}"></td>
+    <td>
+        <input type="number" name="items[${saleItemIndex}].quantity" class="form-control" required oninput="updateSaleAmount(this)" value="${item.quantity || ''}">
+        <div class="text-muted small available-stock"></div>
+    </td>
+    <td><input type="number" name="items[${saleItemIndex}].sellingPrice" class="form-control" readonly value="${item.sellingPrice || ''}"></td>
+    <td><input type="number" name="items[${saleItemIndex}].amount" class="form-control" readonly value="${item.amount || ''}"></td>
+    <td><button type="button" class="btn btn-danger btn-sm" onclick="removeSaleItemRow(this)">🗑️</button></td>
+</tr>
     `;
     tableBody.appendChild(row);
     saleItemIndex++;
@@ -75,7 +78,9 @@ function editSale(button) {
             document.querySelector("#saleModal input[name='clientContact']").value = sale.clientContact;
             document.querySelector("#saleModal input[name='saleDate']").value = sale.saleDate;
             document.querySelector("#saleModal select[name='paymentStatus']").value = sale.paymentStatus;
-
+            document.querySelector("#saleModal input[name='totalAmount']").value = sale.totalAmount;
+            document.querySelector("#saleModal input[name='discountPercentage']").value = sale.discountPercentage;
+            document.querySelector("#saleModal input[name='finalAmount']").value = sale.finalAmount;
             // Clear existing rows
             const tableBody = document.querySelector("#saleItemsTable tbody");
             tableBody.innerHTML = "";
@@ -145,8 +150,11 @@ function openAddSaleModal() {
     document.querySelector("#saleForm").reset();
     document.querySelector("#saleItemsTable tbody").innerHTML = "";
     saleItemIndex = 0;
+
+    document.getElementById("saveSaleBtn").textContent = "Save";
     new bootstrap.Modal(document.getElementById('saleModal')).show();
 }
+document.getElementById('saveSaleBtn').textContent = "Update";
 
 const searchInput = document.getElementById("salesSearch");
 searchInput.addEventListener("input", function () {
@@ -159,7 +167,6 @@ searchInput.addEventListener("input", function () {
     });
 });
 
-document.getElementById('saveSaleBtn').textContent = "Update";
 
 function openSalesDeleteModal(button) {
     const saleId = button.getAttribute("data-id");
@@ -182,8 +189,6 @@ function updateDiscountedTotal() {
     discountedTotalField.value = discountedTotal.toFixed(2);
 }
 
-// Attach to discount field change
-document.querySelector("input[name='discountPercentage']").addEventListener("input", updateTotalWithDiscount);
 
 function viewInvoice(button) {
     const saleId = button.getAttribute("data-id");
@@ -199,7 +204,39 @@ function viewInvoice(button) {
 function printInvoice() {
     const printContents = document.getElementById("invoiceContent").innerHTML;
     const printWindow = window.open("", "", "width=800,height=600");
-    printWindow.document.write(printContents);
+    printWindow.document.write(`
+        <html>
+            <head>
+                <title>Invoice</title>
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        margin: 20px;
+                        color: #000;
+                        background: #fff;
+                    }
+                   
+                    .items-table {
+                        width: 100%;
+                        border-collapse: collapse;
+                    }
+                    .items-table th, .items-table td {
+                        border: 1px solid #000;
+                        padding: 8px;
+                        text-align: center;
+                    }
+                    .totals {
+                        text-align: right;
+                        margin-top: 10px;
+                    }
+                </style>
+            </head>
+            <body>
+                ${printContents}
+            </body>
+        </html>
+    `);
     printWindow.document.close();
     printWindow.print();
 }
@@ -207,3 +244,4 @@ function printInvoice() {
 function downloadInvoicePDF() {
     alert("PDF download feature coming soon!"); // Placeholder for now
 }
+

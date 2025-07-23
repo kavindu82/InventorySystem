@@ -3,23 +3,21 @@ package com.dem.Inventory.controller;
 import com.dem.Inventory.model.InvoiceItem;
 import com.dem.Inventory.model.Sale;
 import com.dem.Inventory.model.SaleItem;
+import com.dem.Inventory.model.SaleType;
 import com.dem.Inventory.repository.InvoiceItemRepository;
 import com.dem.Inventory.repository.SaleItemRepository;
 import com.dem.Inventory.repository.SaleRepository;
 import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.time.LocalDate;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/sales")
@@ -27,9 +25,6 @@ public class SaleController {
 
     @Autowired
     private SaleRepository saleRepository;
-
-    @Autowired
-    private SaleItemRepository saleItemRepository;
 
     @Autowired
     private EntityManager entityManager;
@@ -40,77 +35,126 @@ public class SaleController {
     @GetMapping("/add")
     public String showAddSalePage(Model model) {
         model.addAttribute("sale", new Sale());
-        model.addAttribute("sales", saleRepository.findAll());
+        model.addAttribute("sales", saleRepository.findByType(SaleType.SALE));
         return "add_sale";
     }
 
     @PostMapping("/save")
+    @Transactional
     public String saveSale(@ModelAttribute Sale sale, Model model) {
-        String invoiceNumber;
+        Sale existingSale = null;
 
         if (sale.getId() != null) {
-            // Editing existing sale
-            Sale existingSale = saleRepository.findById(sale.getId())
+            // Fetch existing sale for update
+            existingSale = saleRepository.findById(sale.getId())
                     .orElseThrow(() -> new RuntimeException("Sale not found: " + sale.getId()));
+        }
 
-            // Restore stock quantities for existing items
-            for (SaleItem existingItem : existingSale.getItems()) {
-                InvoiceItem stockItem = invoiceItemRepository.findByItemNo(existingItem.getItemNo())
-                        .orElseThrow(() -> new RuntimeException("Item not found: " + existingItem.getItemNo()));
-                stockItem.setQuantity(stockItem.getQuantity() + existingItem.getQuantity());
-                invoiceItemRepository.save(stockItem);
-            }
-
-            invoiceNumber = existingSale.getInvoiceNumber();
-            saleRepository.deleteById(sale.getId());
-        } else {
-            // New sale
+        String invoiceNumber;
+        if (existingSale == null) {
+            // New Sale: Generate invoice number
             Optional<Sale> lastSale = saleRepository.findTopByOrderByIdDesc();
             Long nextId = lastSale.map(s -> s.getId() + 1).orElse(1L);
             invoiceNumber = String.format("S%03d", nextId);
+            sale.setInvoiceNumber(invoiceNumber);
+            sale.setType(SaleType.SALE);
+        } else {
+            // Existing Sale: Use same invoice number
+            invoiceNumber = existingSale.getInvoiceNumber();
+            sale.setInvoiceNumber(invoiceNumber);
+            sale.setType(SaleType.SALE);
         }
 
-        sale.setInvoiceNumber(invoiceNumber);
+        // Map existing items for quick lookup
+        Map<Long, SaleItem> existingItemsMap = new HashMap<>();
+        if (existingSale != null) {
+            for (SaleItem existingItem : existingSale.getItems()) {
+                existingItemsMap.put(existingItem.getId(), existingItem);
+            }
+        }
 
         double totalAmount = 0.0;
+        List<SaleItem> updatedItems = new ArrayList<>();
 
-        // Validate and deduct stock for new/updated items
-        for (SaleItem item : sale.getItems()) {
-            item.setSale(sale);
-            InvoiceItem stockItem = invoiceItemRepository.findByItemNo(item.getItemNo())
-                    .orElseThrow(() -> new RuntimeException("Item not found: " + item.getItemNo()));
+        for (SaleItem updatedItem : sale.getItems()) {
+            updatedItem.setSale(sale);
 
-            if (stockItem.getQuantity() < item.getQuantity()) {
-                model.addAttribute("errorMessage", "❌ Insufficient stock for item: " + item.getItemNo());
-                model.addAttribute("sales", saleRepository.findAll());
-                model.addAttribute("showModal", true);
-                return "add_sale";
+            // ✅ Fetch stock item
+            InvoiceItem stockItem = invoiceItemRepository.findByItemNo(updatedItem.getItemNo())
+                    .orElseThrow(() -> new RuntimeException("Item not found in inventory: " + updatedItem.getItemNo()));
+
+            if (updatedItem.getId() != null && existingItemsMap.containsKey(updatedItem.getId())) {
+                // Update existing SaleItem
+                SaleItem existingItem = existingItemsMap.get(updatedItem.getId());
+
+                // ✅ Restore stock for old quantity
+                stockItem.setQuantity(stockItem.getQuantity() + existingItem.getQuantity());
+
+                // ✅ Deduct stock for new quantity
+                if (stockItem.getQuantity() < updatedItem.getQuantity()) {
+                    model.addAttribute("errorMessage", "❌ Insufficient stock for item: " + updatedItem.getItemNo());
+                    model.addAttribute("sales", saleRepository.findByType(SaleType.SALE));
+                    model.addAttribute("showModal", true);
+                    return "add_sale";
+                }
+                stockItem.setQuantity(stockItem.getQuantity() - updatedItem.getQuantity());
+                invoiceItemRepository.save(stockItem);
+
+                // Update fields
+                existingItem.setItemNo(updatedItem.getItemNo());
+                existingItem.setItemName(updatedItem.getItemName());
+                existingItem.setQuantity(updatedItem.getQuantity());
+                existingItem.setSellingPrice(updatedItem.getSellingPrice());
+                existingItem.setAmount(updatedItem.getAmount());
+                updatedItems.add(existingItem);
+
+                existingItemsMap.remove(updatedItem.getId());
+            } else {
+                // New SaleItem
+                if (stockItem.getQuantity() < updatedItem.getQuantity()) {
+                    model.addAttribute("errorMessage", "❌ Insufficient stock for item: " + updatedItem.getItemNo());
+                    model.addAttribute("sales", saleRepository.findByType(SaleType.SALE));
+                    model.addAttribute("showModal", true);
+                    return "add_sale";
+                }
+
+                stockItem.setQuantity(stockItem.getQuantity() - updatedItem.getQuantity());
+                invoiceItemRepository.save(stockItem);
+
+                updatedItems.add(updatedItem);
             }
 
-            stockItem.setQuantity(stockItem.getQuantity() - item.getQuantity());
-            invoiceItemRepository.save(stockItem);
-
-            totalAmount += item.getAmount(); // Sum up item amounts
+            totalAmount += updatedItem.getAmount();
         }
 
-        // ✅ Apply percentage discount
-        double discountPercentage = sale.getDiscountPercentage(); // Add this field in Sale.java
+        // ✅ Handle deleted items (restore stock)
+        for (SaleItem removedItem : existingItemsMap.values()) {
+            InvoiceItem stockItem = invoiceItemRepository.findByItemNo(removedItem.getItemNo())
+                    .orElse(null);
+            if (stockItem != null) {
+                stockItem.setQuantity(stockItem.getQuantity() + removedItem.getQuantity());
+                invoiceItemRepository.save(stockItem);
+            }
+        }
+
+        sale.setItems(updatedItems);
+
+        // Apply discount
+        double discountPercentage = sale.getDiscountPercentage();
         double discountAmount = (totalAmount * discountPercentage) / 100.0;
         double finalAmount = totalAmount - discountAmount;
 
-        sale.setTotalAmount(totalAmount);          // Original total discountPercentage
-        sale.setDiscountAmount(discountAmount);    // Discount amount
-        sale.setFinalAmount(finalAmount);          // Total after discount
+        sale.setTotalAmount(totalAmount);
+        sale.setDiscountAmount(discountAmount);
+        sale.setFinalAmount(finalAmount);
 
         saleRepository.save(sale);
 
-        model.addAttribute("sales", saleRepository.findAll());
+        model.addAttribute("sales", saleRepository.findByType(SaleType.SALE));
         model.addAttribute("sale", new Sale());
-        model.addAttribute("successMessage", "✅ Sale saved successfully!");
-        return "add_sale";
+        model.addAttribute("successMessage", (existingSale != null ? "✏️ Sale updated successfully!" : "✅ Sale saved successfully!"));
+        return "redirect:/sales/add?success=add";
     }
-
-
 
     @GetMapping("/api/{id}")
     @ResponseBody
@@ -126,7 +170,6 @@ public class SaleController {
         return item.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    // Inside @Controller class
     @GetMapping("/api/items")
     @ResponseBody
     public List<InvoiceItem> getAllItems() {
@@ -155,6 +198,8 @@ public class SaleController {
         existingSale.setSaleDate(sale.getSaleDate());
         existingSale.setPaymentStatus(sale.getPaymentStatus());
         existingSale.setTotalAmount(sale.getTotalAmount());
+        existingSale.setDiscountPercentage(sale.getDiscountPercentage());
+        existingSale.setFinalAmount(sale.getFinalAmount());
 
         // ✅ Update or add sale items
         for (SaleItem updatedItem : sale.getItems()) {
@@ -200,39 +245,79 @@ public class SaleController {
         model.addAttribute("sales", saleRepository.findAll());
         model.addAttribute("sale", new Sale());
         model.addAttribute("successMessage", "✏️ Sale updated successfully!");
-        return "add_sale";
+        return "redirect:/sales/add?success=update";
     }
 
     @GetMapping("/delete/{id}")
     @Transactional
     public String deleteSale(@PathVariable Long id, Model model) {
         Sale sale = saleRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid sale ID: " + id));
+                .orElseThrow(() -> new RuntimeException("Sale not found: " + id));
 
-        // ✅ Restore stock for all sale items
+        // Restore stock for all sale items
         for (SaleItem item : sale.getItems()) {
-            InvoiceItem stockItem = invoiceItemRepository.findByItemNo(item.getItemNo()).orElse(null);
+            InvoiceItem stockItem = invoiceItemRepository.findByItemNo(item.getItemNo())
+                    .orElse(null);
             if (stockItem != null) {
                 stockItem.setQuantity(stockItem.getQuantity() + item.getQuantity());
                 invoiceItemRepository.save(stockItem);
             }
         }
 
-        // ✅ Delete sale
+        // ✅ Delete the sale and all its items
         saleRepository.delete(sale);
 
-        model.addAttribute("sales", saleRepository.findAll());
+        model.addAttribute("sales", saleRepository.findByType(SaleType.SALE)); // 👈 Filter for SALES only
         model.addAttribute("sale", new Sale());
         model.addAttribute("successMessage", "🗑️ Sale deleted successfully!");
-        return "add_sale";
+
+        return "redirect:/sales/add?success=delete";
     }
+
 
     @GetMapping("/invoice/{id}")
     public String getInvoiceHtml(@PathVariable Long id, Model model) {
         Sale sale = saleRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid sale ID: " + id));
         model.addAttribute("sale", sale);
-        return "invoice";
+        return "add_sale :: invoiceContent"; // Return only the modal content
+    }
+
+    @GetMapping("/reports")
+    public String showSalesReport(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
+            @RequestParam(required = false) String clientName,
+            @RequestParam(required = false) String paymentStatus,
+            Model model) {
+
+        // Clean empty strings
+        if (clientName != null && clientName.trim().isEmpty()) clientName = null;
+        if (paymentStatus != null && paymentStatus.trim().isEmpty()) paymentStatus = null;
+
+        // ✅ Fetch filtered sales (only type=SALE)
+        List<Sale> sales = saleRepository.findSalesByFilters(SaleType.SALE, fromDate, toDate, clientName, paymentStatus);
+        model.addAttribute("sales", sales);
+
+        // ✅ Metrics: Based on filtered results
+        Double totalSales = sales.stream().mapToDouble(Sale::getFinalAmount).sum();
+        Double totalDiscounts = sales.stream().mapToDouble(Sale::getDiscountAmount).sum();
+        long totalInvoices = sales.size();
+
+        String topItem = sales.stream()
+                .flatMap(s -> s.getItems().stream())
+                .collect(Collectors.groupingBy(SaleItem::getItemName, Collectors.summingInt(SaleItem::getQuantity)))
+                .entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse("N/A");
+
+        model.addAttribute("totalSales", totalSales);
+        model.addAttribute("totalDiscounts", totalDiscounts);
+        model.addAttribute("totalInvoices", totalInvoices);
+        model.addAttribute("topItem", topItem);
+
+        return "sales_report";
     }
 
 }

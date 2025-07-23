@@ -19,6 +19,7 @@ public class Sale {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false, unique = true)
     private String invoiceNumber;
     private String clientName;
     private String clientContact;
@@ -30,9 +31,14 @@ public class Sale {
     private String paymentStatus; // PAID / PENDING
 
 
+
     @OneToMany(mappedBy = "sale", cascade = CascadeType.ALL)
     @JsonManagedReference
     private List<SaleItem> items = new ArrayList<>();
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private SaleType type = SaleType.SALE; // Default type
 
 
 

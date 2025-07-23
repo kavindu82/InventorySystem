@@ -6,47 +6,15 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" th:href="@{/css/add_item.css}">
 </head>
+
 <body>
 
-<!-- ✅ Header -->
-<div class="header">
-  <div class="logo">
-    <img src="/images/logo.png" alt="Logo">
-    <h5 class="mb-0">DULANJALEE ENTERPRISES & MOTORS</h5>
-  </div>
-  <div class="text-end">
-    <span th:text="'👤 ' + ${#authentication.name}"></span>
-  </div>
-</div>
+<!-- Include Header -->
+<div th:replace="fragments/header :: appHeader"></div>
 
-<!-- ✅ Sidebar + Main Content -->
+<!-- Sidebar + Content -->
 <div class="d-flex">
-  <nav class="sidebar p-3">
-    <h5 class="fw-bold">Menu</h5>
-    <ul class="nav flex-column">
-      <li class="nav-item mt-2"><a class="nav-link" th:href="@{/dashboard}">🏠 Dashboard</a></li>
-      <li class="nav-item mt-2">
-        <span class="fw-bold">ITEM</span>
-        <ul class="nav flex-column ms-3">
-          <li><a class="nav-link active" th:href="@{/item/add}">Add Item</a></li>
-          <li><a class="nav-link" th:href="@{/item/invoice}">Add Invoice Item</a></li>
-        </ul>
-      </li>
-      <li class="nav-item mt-3">
-        <span class="fw-bold">SUPPLIER</span>
-        <ul class="nav flex-column ms-3">
-          <li><a class="nav-link" th:href="@{/supplier/add}">Add Supplier</a></li>
-        </ul>
-      </li>
-        <li class="nav-item mt-3">
-            <span class="fw-bold">SALES</span>
-            <ul class="nav flex-column ms-3">
-                <li><a class="nav-link" th:href="@{/sales/add}">Add Sale</a></li>
-                <li><a class="nav-link" th:href="@{/sales/reports}">Sales Reports</a></li>
-            </ul>
-        </li>
-    </ul>
-  </nav>
+  <div th:replace="fragments/sidebar :: appSidebar"></div>
 
 
   <!-- Main Content -->
@@ -131,7 +99,7 @@
           </tbody>
         </table>
       </div>
-    </div>
+     </div>
     </div>
   </div>
 </div>

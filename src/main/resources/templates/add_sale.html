@@ -7,48 +7,21 @@
     <link rel="stylesheet" th:href="@{/css/add_sale.css}">
 </head>
 <body>
-<!-- Header -->
-<div class="header d-flex justify-content-between align-items-center p-3 bg-warning">
-    <div class="logo d-flex align-items-center">
-        <img src="/images/logo.png" alt="Logo" class="me-2" style="height:40px; width:40px; border-radius:50%;">
-        <h5 class="mb-0">DULANJALEE ENTERPRISES & MOTORS</h5>
-    </div>
-    <div>
-        <span th:text="'👤 ' + ${#authentication.name}"></span>
-    </div>
-</div>
+<!-- Include Header -->
+<div th:replace="fragments/header :: appHeader"></div>
 
 <!-- Sidebar + Content -->
 <div class="d-flex">
-    <nav class="sidebar p-3">
-        <h5 class="fw-bold">Menu</h5>
-        <ul class="nav flex-column">
-            <li class="nav-item"><a class="nav-link" th:href="@{/dashboard}">🏠 Dashboard</a></li>
-            <li class="nav-item mt-2">
-                <span class="fw-bold">ITEM</span>
-                <ul class="nav flex-column ms-3">
-                    <li><a class="nav-link" th:href="@{/item/add}">Add Item</a></li>
-                    <li><a class="nav-link" th:href="@{/item/invoice}">Add Invoice Item</a></li>
-                </ul>
-            </li>
-            <li class="nav-item mt-2">
-                <span class="fw-bold">SUPPLIER</span>
-                <ul class="nav flex-column ms-3">
-                    <li><a class="nav-link" th:href="@{/supplier/add}">Add Supplier</a></li>
-                </ul>
-            </li>
-            <li class="nav-item mt-3">
-                <span class="fw-bold">SALES</span>
-                <ul class="nav flex-column ms-3">
-                    <li><a class="nav-link" th:href="@{/sales/add}">Add Sale</a></li>
-                    <li><a class="nav-link" th:href="@{/sales/reports}">Sales Reports</a></li>
-                </ul>
-            </li>
-        </ul>
-    </nav>
+    <div th:replace="fragments/sidebar :: appSidebar"></div>
 
     <div class="container p-4 flex-grow-1">
         <h2>Add Sale</h2>
+
+        <div th:if="${param.success}" class="alert alert-success fade-out" role="alert" th:switch="${param.success}">
+            <span th:if="${param.success[0] == 'add'}">✅ Sale added successfully!</span>
+            <span th:if="${param.success[0] == 'update'}">✏️ Sale updated successfully!</span>
+            <span th:if="${param.success[0] == 'delete'}">🗑️ Sale deleted successfully!</span>
+        </div>
 
         <button class="btn btn-success mb-3" onclick="openAddSaleModal()">➕ Add Sale</button>
 
@@ -79,7 +52,6 @@
                     <a class="btn btn-sm btn-warning" href="#" th:attr="data-id=${sale.id}" onclick="editSale(this)">✏️</a>
                     <a class="btn btn-sm btn-danger" href="#" th:attr="data-id=${sale.id}" onclick="openSalesDeleteModal(this)">🗑️</a>
                     <a class="btn btn-sm btn-primary" href="#" th:attr="data-id=${sale.id}" onclick="viewInvoice(this)">📄</a>
-
                 </td>
             </tr>
             </tbody>
@@ -137,16 +109,26 @@
                     <button type="button" class="btn btn-secondary" onclick="addSaleItemRow()">➕ Add Item</button>
                     <div class="mt-3">
                         <label>Total Amount (Before Discount)</label>
-                        <input type="number" class="form-control" th:field="*{totalAmount}" name="totalAmount" readonly>
+                        <input type="number" class="form-control"
+                               th:field="*{totalAmount}"
+                               name="totalAmount" readonly
+                               placeholder="Total Amount">
                     </div>
                     <div class="row mt-3">
                         <div class="col-md-6 mb-3">
                             <label>Discount (%)</label>
-                            <input type="number" class="form-control" name="discountPercentage" placeholder="Enter discount %" min="0" max="100" oninput="updateDiscountedTotal()">
+                            <input type="number" class="form-control"
+                                   th:field="*{discountPercentage}"
+                                   name="discountPercentage"
+                                   placeholder="Discount %"
+                                   oninput="updateDiscountedTotal()">
                         </div>
                         <div class="col-md-6 mb-3">
                             <label>Discounted Total</label>
-                            <input type="number" class="form-control" th:field="*{finalAmount}" name="finalAmount" readonly>
+                            <input type="number" class="form-control"
+                                   th:field="*{finalAmount}"
+                                   name="finalAmount" readonly
+                                   placeholder="Final Amount">
                         </div>
                     </div>
                 </div>
@@ -159,9 +141,6 @@
             </form>
         </div>
     </div>
-</div>
-<div>
-
 </div>
 
     <!-- Delete Confirmation Modal -->
@@ -183,14 +162,47 @@
     </div>
 </div>
 <!-- ✅ Invoice Modal -->
-<div class="modal fade" id="invoiceModal" tabindex="-1" aria-labelledby="invoiceModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+<div class="modal fade1" id="invoiceModal"  tabindex="-1" aria-labelledby="invoiceModalLabel" aria-hidden="true">
+    <div class="modal-dialog ">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Invoice Preview</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body" id="invoiceContent">
+            <div class="modal-body" id="invoiceContent" th:fragment="invoiceContent">
+                <div class="invoice-details p-4">
+                    <p><strong>Invoice No:</strong> <span th:text="${sale.invoiceNumber}"></span></p>
+                    <p><strong>Date:</strong> <span th:text="${sale.saleDate}"></span></p>
+                    <p><strong>Client Name:</strong> <span th:text="${sale.clientName}"></span></p>
+                    <p><strong>Client Contact:</strong> <span th:text="${sale.clientContact}"></span></p>
+                </div>
+
+                <table class="table table-bordered items-table">
+                    <thead class="table-light">
+                    <tr>
+                        <th>Item No</th>
+                        <th>Item Name</th>
+                        <th>Quantity</th>
+                        <th>Selling Price</th>
+                        <th>Amount</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="item : ${sale.items}">
+                        <td th:text="${item.itemNo}"></td>
+                        <td th:text="${item.itemName}"></td>
+                        <td th:text="${item.quantity}"></td>
+                        <td th:text="${item.sellingPrice}"></td>
+                        <td th:text="${item.amount}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <div class="totals p-4 text-end">
+                    <p><strong>Total Amount:</strong> Rs. <span th:text="${sale.totalAmount}"></span></p>
+                    <p><strong>Discount (<span th:text="${sale.discountPercentage}"></span>%):</strong> Rs. <span th:text="${sale.discountAmount}"></span></p>
+                    <p><strong>Final Total:</strong> Rs. <span th:text="${sale.finalAmount}"></span></p>
+                </div>
 
             </div>
                <div class="modal-footer">
@@ -198,9 +210,9 @@
                    <button class="btn btn-success" onclick="downloadInvoicePDF()">⬇️ Download PDF</button>
                    <button class="btn btn-secondary" data-bs-dismiss="modal">❌ Cancel</button>
                </div>
-           </div>
-       </div>
-     </div>
+        </div>
+    </div>
+</div>
 
 
    <script th:src="@{/js/add_sale.js}"></script>

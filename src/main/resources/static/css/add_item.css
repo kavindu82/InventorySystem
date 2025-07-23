@@ -1,21 +1,7 @@
-.fade-out {
-    animation: fadeOut 1s ease-in-out 3s forwards;
-}
-@keyframes fadeOut {
-    to { opacity: 0; display: none; }
-}
-
-#itemTable thead th {
-    position: sticky;
-    top: 0;
-    background-color: #343a40; /* dark header */
-    color: white;
-    z-index: 1;
-}
 .sidebar {
     background-color: #fff8cc;
     height: 100vh;
-    width: 250px;
+    width: 200px;
 }
 
 .sidebar .nav-link {

@@ -1,48 +1,34 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>sidebar</title>
-</head>
-<body>
-<!-- sidebar.html -->
-<div th:fragment="sidebar">
-    <nav class="bg-dark text-white p-3" style="height: 100vh; width: 250px;">
-        <h4>Inventory Menu</h4>
-
+<div th:fragment="appSidebar">
+    <nav class="sidebar p-2">
+        <h5 class="fw-bold">Menu</h5>
         <ul class="nav flex-column">
-
-            <!-- Dashboard -->
-            <li class="nav-item mb-2">
-                <a class="nav-link text-white" th:href="@{/dashboard}">🏠 Dashboard</a>
-            </li>
-
-            <!-- ITEM Section -->
+            <li class="nav-item"><a class="nav-link" th:href="@{/dashboard}">🏠 Dashboard</a></li>
             <li class="nav-item mt-2">
-                <span class="nav-link text-white fw-bold">ITEM</span>
+                <span class="fw-bold">ITEM</span>
                 <ul class="nav flex-column ms-3">
-                    <li class="nav-item">
-                        <a class="nav-link text-white [[${#httpServletRequest.requestURI.contains('/item/add')} ? 'active' : '']]" th:href="@{/item/add}">Add Item</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-white [[${#httpServletRequest.requestURI.contains('/item/invoice')} ? 'active' : '']]" th:href="@{/item/invoice}">Add Invoice Item</a>
-                    </li>
+                    <li><a class="nav-link" th:href="@{/item/add}">Add Item</a></li>
+                    <li><a class="nav-link" th:href="@{/item/invoice}">Add Invoice Item</a></li>
                 </ul>
             </li>
-
-            <!-- SUPPLIER Section -->
+            <li class="nav-item mt-2">
+                <span class="fw-bold">SUPPLIER</span>
+                <ul class="nav flex-column ms-3">
+                    <li><a class="nav-link" th:href="@{/supplier/add}">Add Supplier</a></li>
+                </ul>
+            </li>
             <li class="nav-item mt-3">
-                <span class="nav-link text-white fw-bold">SUPPLIER</span>
+                <span class="fw-bold">SALES</span>
                 <ul class="nav flex-column ms-3">
-                    <li class="nav-item">
-                        <a class="nav-link text-white [[${#httpServletRequest.requestURI.contains('/supplier/add')} ? 'active' : '']]" th:href="@{/supplier/add}">Add Supplier</a>
-                    </li>
+                    <li><a class="nav-link" th:href="@{/sales/add}">Add Sale</a></li>
+                    <li><a class="nav-link" th:href="@{/sales/reports}">Sales Reports</a></li>
                 </ul>
             </li>
-
+            <li class="nav-item mt-3">
+                <span class="fw-bold">📜 QUOTATION</span>
+                <ul class="nav flex-column ms-3">
+                    <li><a class="nav-link" th:href="@{/quotation}">➕ Add Quotation</a></li>
+                </ul>
+            </li>
         </ul>
     </nav>
 </div>
-
-</body>
-</html>

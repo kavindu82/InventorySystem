@@ -8,45 +8,12 @@
 </head>
 <body>
 
-<!-- Header -->
-<div class="header">
-    <div class="logo">
-        <img src="/images/logo.png" alt="Logo">
-        <h5 class="mb-0">DULANJALEE ENTERPRISES & MOTORS</h5>
-    </div>
-    <div class="text-end">
-        <span th:text="'👤 ' + ${#authentication.name}"></span>
-    </div>
-</div>
+<!-- Include Header -->
+<div th:replace="fragments/header :: appHeader"></div>
 
 <!-- Sidebar + Content -->
-<div class="d-flex" style="min-height: 100vh;">
-    <nav class="sidebar p-3">
-        <h5 class="fw-bold">Menu</h5>
-        <ul class="nav flex-column">
-            <li class="nav-item mt-2"><a class="nav-link" th:href="@{/dashboard}">🏠 Dashboard</a></li>
-            <li class="nav-item mt-2">
-                <span class="fw-bold">ITEM</span>
-                <ul class="nav flex-column ms-3">
-                    <li><a class="nav-link" th:href="@{/item/add}">Add Item</a></li>
-                    <li><a class="nav-link active" th:href="@{/item/invoice}">Add Invoice Item</a></li>
-                </ul>
-            </li>
-            <li class="nav-item mt-3">
-                <span class="fw-bold">SUPPLIER</span>
-                <ul class="nav flex-column ms-3">
-                    <li><a class="nav-link" th:href="@{/supplier/add}">Add Supplier</a></li>
-                </ul>
-            </li>
-            <li class="nav-item mt-3">
-                <span class="fw-bold">SALES</span>
-                <ul class="nav flex-column ms-3">
-                    <li><a class="nav-link" th:href="@{/sales/add}">Add Sale</a></li>
-                    <li><a class="nav-link" th:href="@{/sales/reports}">Sales Reports</a></li>
-                </ul>
-            </li>
-        </ul>
-    </nav>
+<div class="d-flex">
+    <div th:replace="fragments/sidebar :: appSidebar"></div>
 
     <!--  Main Content -->
     <div class="container p-4 flex-grow-1">
@@ -113,6 +80,15 @@
                                     <input type="text" class="form-control" th:field="*{importSizeAndDimension}" name="importSizeAndDimension" required>
                                 </div>
                                 <div class="col-md-3 mb-3">
+                                    <label>Currency</label>
+                                    <select class="form-select" id="currency" name="currency" required onchange="convertToLKR()">
+                                        <option value="LKR" selected>LKR</option>
+                                        <option value="USD">USD</option>
+                                        <option value="CNY">CNY</option>
+                                        <option value="SGD">SGD</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3 mb-3">
                                     <label>Cost Price</label>
                                     <input type="number" step="0.01" class="form-control" th:field="*{costPrice}" name="costPrice" id="costPrice" required>
                                 </div>
@@ -121,8 +97,8 @@
                                     <input type="number" step="0.01" class="form-control" th:field="*{sellingPrice}" name="sellingPrice" required>
                                 </div>
                                 <div class="col-md-3 mb-3">
-                                    <label>Number</label>
-                                    <input type="text" class="form-control" th:field="*{number}" name="number" required>
+                                    <label>Low Quantity</label>
+                                    <input type="number" class="form-control" th:field="*{lowQuantity}" name="lowQuantity" id="lowQuantity"  required>
                                 </div>
                                 <div class="col-md-3 mb-3">
                                     <label>Arrival Date</label>
@@ -161,7 +137,7 @@
                         <th>Size</th>
                         <th>Cost</th>
                         <th>Selling</th>
-                        <th>Number</th>
+                        <th>Low Quantity</th>
                         <th>Arrival</th>
                         <th>Amount</th>
                         <th>Action</th>
@@ -178,7 +154,7 @@
                         <td th:text="${inv.importSizeAndDimension}"></td>
                         <td th:text="${inv.costPrice}"></td>
                         <td th:text="${inv.sellingPrice}"></td>
-                        <td th:text="${inv.number}"></td>
+                        <td th:text="${inv.lowQuantity}"></td>
                         <td th:text="${inv.arrivalDate}"></td>
                         <td th:text="${inv.amount}"></td>
                         <td>

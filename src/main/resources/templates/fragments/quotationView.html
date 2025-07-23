@@ -1,0 +1,31 @@
+<div th:fragment="invoiceContent">
+    <h5>Quotation Details</h5>
+    <p><strong>Quotation No:</strong> <span th:text="${sale.invoiceNumber}"></span></p>
+    <p><strong>Client Name:</strong> <span th:text="${sale.clientName}"></span></p>
+    <p><strong>Date:</strong> <span th:text="${sale.saleDate}"></span></p>
+
+    <table class="table table-bordered">
+        <thead>
+        <tr>
+            <th>Item No</th>
+            <th>Item Name</th>
+            <th>Quantity</th>
+            <th>Price</th>
+            <th>Amount</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="item : ${sale.items}">
+            <td th:text="${item.itemNo}"></td>
+            <td th:text="${item.itemName}"></td>
+            <td th:text="${item.quantity}"></td>
+            <td th:text="${item.sellingPrice}"></td>
+            <td th:text="${item.amount}"></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <p><strong>Total Amount:</strong> Rs. <span th:text="${sale.totalAmount}"></span></p>
+    <p><strong>Discount:</strong> Rs. <span th:text="${sale.discountAmount}"></span></p>
+    <p><strong>Final Total:</strong> Rs. <span th:text="${sale.finalAmount}"></span></p>
+</div>

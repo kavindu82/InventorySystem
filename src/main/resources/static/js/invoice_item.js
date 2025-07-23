@@ -41,7 +41,7 @@ function openEditModal(button) {
     document.querySelector("#invoiceModal input[name='importSizeAndDimension']").value = cells[6].textContent.trim();
     document.querySelector("#invoiceModal input[name='costPrice']").value = cells[7].textContent.trim();
     document.querySelector("#invoiceModal input[name='sellingPrice']").value = cells[8].textContent.trim();
-    document.querySelector("#invoiceModal input[name='number']").value = cells[9].textContent.trim();
+    document.querySelector("#invoiceModal input[name='lowQuantity']").value = cells[9].textContent.trim();
     document.querySelector("#invoiceModal input[name='arrivalDate']").value = cells[10].textContent.trim();
     document.querySelector("#invoiceModal input[name='amount']").value = cells[11].textContent.trim();
 
@@ -67,4 +67,24 @@ invoiceModal.addEventListener('show.bs.modal', function () {
         btn.textContent = "Save Item";
     }
 });
+
+const exchangeRates = {
+    "LKR": 1,
+    "USD": 325,  // example rate
+    "CNY": 45,   // example rate
+    "SGD": 240   // example rate
+};
+
+function convertToLKR() {
+    const currency = document.getElementById("currency").value;
+    const foreignPrice = parseFloat(document.getElementById("costPrice").value) || 0;
+
+    const rate = exchangeRates[currency];
+    const lkrPrice = (foreignPrice * rate).toFixed(2);
+
+    // Show converted price in a helper field or replace costPrice
+    document.getElementById("costPrice").value = lkrPrice;
+
+    calculateAmount(); // Update total amount too
+}
 

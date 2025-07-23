@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Add Quotation</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/layout.css}">
+</head>
+<body>
+<div th:replace="fragments/header :: appHeader"></div>
+
+<div class="d-flex">
+    <div th:replace="fragments/sidebar :: appSidebar"></div>
+
+    <div class="container p-4 flex-grow-1">
+        <h2>📜 Add Quotation</h2>
+
+        <!-- Add Quotation Button -->
+        <button class="btn btn-success mb-3" onclick="openAddQuotationModal()">➕ New Quotation</button>
+
+        <!-- Quotation Table -->
+        <div class="card">
+            <div class="card-header bg-warning text-white">
+                Saved Quotations
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-bordered table-hover mb-0">
+                    <thead class="table-dark">
+                    <tr>
+                        <th>Quotation No</th>
+                        <th>Client Name</th>
+                        <th>Date</th>
+                        <th>Total Amount</th>
+                        <th>Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="quotation : ${quotations}">
+                        <td th:text="${quotation.invoiceNumber}">Q001</td>
+                        <td th:text="${quotation.clientName}">John Doe</td>
+                        <td th:text="${quotation.saleDate}">2025-07-17</td>
+                        <td th:text="${quotation.finalAmount}">0.00</td>
+                        <td>
+                            <a class="btn btn-sm btn-info" href="#" th:attr="data-id=${quotation.id}" onclick="viewQuotation(this)">👁️ View</a>
+                            <a class="btn btn-sm btn-primary" href="#" th:attr="data-id=${quotation.id}" onclick="downloadQuotationPDF(this)">⬇️ PDF</a>
+                            <a class="btn btn-sm btn-secondary" href="#" onclick="printQuotation(this)">🖨️ Print</a>
+                            <a class="btn btn-sm btn-success" th:href="@{/quotation/convert/{id}(id=${quotation.id})}">💵 Convert</a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Quotation Modal -->
+<div class="modal fade" id="quotationModal" tabindex="-1" aria-labelledby="quotationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-white">
+                <h5 class="modal-title">➕ New Quotation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="quotationForm" th:action="@{/quotation/save}" method="post" th:object="${sale}">
+                <div class="modal-body">
+                    <input type="hidden" name="type" value="QUOTATION" /> <!-- Set type -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label>Client Name</label>
+                            <input type="text" class="form-control" th:field="*{clientName}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label>Client Contact</label>
+                            <input type="text" class="form-control" th:field="*{clientContact}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label>Quotation Date</label>
+                            <input type="date" class="form-control" th:field="*{saleDate}" required>
+                        </div>
+                    </div>
+
+                    <h5 class="mt-4">Quotation Items</h5>
+                    <table class="table table-bordered" id="quotationItemsTable">
+                        <thead>
+                        <tr>
+                            <th>Item No</th>
+                            <th>Item Name</th>
+                            <th>Quantity</th>
+                            <th>Price</th>
+                            <th>Amount</th>
+                            <th>Action</th>
+                        </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                    <button type="button" class="btn btn-secondary" onclick="addQuotationItemRow()">➕ Add Item</button>
+
+                    <div class="mt-3">
+                        <label>Total Amount</label>
+                        <input type="number" class="form-control" th:field="*{totalAmount}" readonly>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-6 mb-3">
+                            <label>Discount (%)</label>
+                            <input type="number" class="form-control" th:field="*{discountPercentage}" min="0" max="100" oninput="updateQuotationTotal()">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label>Final Amount</label>
+                            <input type="number" class="form-control" th:field="*{finalAmount}" readonly>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">💾 Save Quotation</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">❌ Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- View Quotation Modal -->
+<div class="modal fade" id="invoiceModal" tabindex="-1" aria-labelledby="invoiceModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">📄 Quotation Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="invoiceContent">
+                <!-- Quotation details will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">❌ Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script th:src="@{/js/quotation.js}"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

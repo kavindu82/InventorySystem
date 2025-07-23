@@ -13,9 +13,9 @@ public class LoginController {
         return "login";
     }
 
-    @GetMapping("/dashboard")
+    @GetMapping("/loginSuccess")
     public String dashboard() {
-        return "dashboard";
+        return "redirect:/dashboard";
     }
 
     @GetMapping("/forgot-password")
