@@ -68,23 +68,42 @@ invoiceModal.addEventListener('show.bs.modal', function () {
     }
 });
 
-const exchangeRates = {
-    "LKR": 1,
-    "USD": 325,  // example rate
-    "CNY": 45,   // example rate
-    "SGD": 240   // example rate
-};
-
-function convertToLKR() {
+async function fetchAndConvertCurrency() {
     const currency = document.getElementById("currency").value;
-    const foreignPrice = parseFloat(document.getElementById("costPrice").value) || 0;
+    const originalPrice = parseFloat(document.getElementById("originalCostPrice").value) || 0;
 
-    const rate = exchangeRates[currency];
-    const lkrPrice = (foreignPrice * rate).toFixed(2);
+    if (currency === "LKR") {
+        // If local currency, no conversion needed
+        document.getElementById("costPrice").value = originalPrice.toFixed(2);
+        calculateAmount();
+        return;
+    }
 
-    // Show converted price in a helper field or replace costPrice
-    document.getElementById("costPrice").value = lkrPrice;
+    try {
+        const response = await fetch(`https://api.exchangerate.host/latest?base=${currency}&symbols=LKR`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const data = await response.json();
 
-    calculateAmount(); // Update total amount too
+        // Safely access nested properties
+        const rate = data?.rates?.LKR;
+        if (rate) {
+            const convertedPrice = (originalPrice * rate).toFixed(2);
+            document.getElementById("costPrice").value = convertedPrice;
+        } else {
+            console.warn("⚠️ Exchange rate for LKR not found. Using fallback rate.");
+            const fallbackRate = 300; // fallback: 1 foreign = 300 LKR
+            const convertedPrice = (originalPrice * fallbackRate).toFixed(2);
+            document.getElementById("costPrice").value = convertedPrice;
+        }
+
+        calculateAmount();
+    } catch (error) {
+        console.error("Error fetching exchange rate:", error);
+        alert("⚠️ Unable to fetch exchange rate. Please check your internet connection.");
+    }
 }
+
+
 
