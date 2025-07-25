@@ -25,18 +25,6 @@ public class UserController {
         return "register";
     }
 
-   /* @PostMapping("/register")
-    public String registerUser(@ModelAttribute("user") User user) {
-        // Set default role if needed
-        if (user.getRole() == null || user.getRole().isBlank()) {
-            user.setRole("USER");
-        }
-
-        // Encode password
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userRepository.save(user);
-        return "redirect:/login?success=register";
-    }*/
 
     @PostMapping("/register")
     public String registerUser(@ModelAttribute("user") User user) {
