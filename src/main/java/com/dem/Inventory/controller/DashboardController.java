@@ -2,6 +2,7 @@ package com.dem.Inventory.controller;
 
 import com.dem.Inventory.model.InvoiceItem;
 import com.dem.Inventory.repository.InvoiceItemRepository;
+import com.dem.Inventory.repository.ItemRepository;
 import com.dem.Inventory.repository.SaleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -18,13 +19,16 @@ public class DashboardController {
     private InvoiceItemRepository invoiceItemRepository;
 
     @Autowired
+    private ItemRepository itemRepository;
+
+    @Autowired
     private SaleRepository saleRepository;
 
     @GetMapping("/dashboard")
     public String showDashboard(Model model) {
 
         // ✅ Total Inventory Items
-        int totalItems = (int) invoiceItemRepository.count();
+        int totalItems = (int) itemRepository.count();
         model.addAttribute("totalItems", totalItems);
 
         // ✅ Low stock items (count and list)
