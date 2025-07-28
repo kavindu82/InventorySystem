@@ -148,6 +148,7 @@
                         <th>Supplier</th>
                         <th>Qty</th>
                         <th>Size</th>
+                        <th>Original Cost</th>
                         <th>Cost</th>
                         <th>Selling</th>
                         <th>Low Quantity</th>
@@ -157,7 +158,8 @@
                     </tr>
                     </thead>
                     <tbody id="invoiceTableBody">
-                    <tr th:each="inv, iterStat : ${invoiceItems}">
+                    <tr th:each="inv, iterStat : ${invoiceItems}"
+                        th:attr="data-id=${inv.no}, data-currency=${inv.currency}, data-original-cost=${inv.originalCostPrice}">
                         <td th:text="${iterStat.count}"></td>
                         <td th:text="${inv.itemNo}"></td>
                         <td th:text="${inv.itemName}"></td>
@@ -165,6 +167,7 @@
                         <td th:text="${inv.supplierName}"></td>
                         <td th:text="${inv.quantity}"></td>
                         <td th:text="${inv.importSizeAndDimension}"></td>
+                        <td th:text="${inv.currency + ' ' + inv.originalCostPrice}"></td> <!-- currency display -->
                         <td th:text="${inv.costPrice}"></td>
                         <td th:text="${inv.sellingPrice}"></td>
                         <td th:text="${inv.lowQuantity}"></td>
@@ -173,16 +176,14 @@
                         <td>
                             <a class="btn btn-sm btn-warning"
                                href="#"
-                               th:attr="data-id=${inv.no}"
                                onclick="openEditModal(this)">✏️</a>
-
                             <a class="btn btn-sm btn-danger"
                                href="#"
-                               th:attr="data-id=${inv.no}"
                                onclick="openDeleteModal(this)">🗑️</a>
                         </td>
                     </tr>
                     </tbody>
+
                 </table>
             </div>
         </div>

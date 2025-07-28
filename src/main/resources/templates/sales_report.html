@@ -9,11 +9,11 @@
 </head>
 <body>
 <!-- Include Header -->
-<div th:replace="fragments/header :: appHeader"></div>
+<div th:replace="~{fragments/header :: appHeader}"></div>
 
 <!-- Sidebar + Content -->
 <div class="d-flex">
-    <div th:replace="fragments/sidebar :: appSidebar"></div>
+    <div th:replace="~{fragments/sidebar :: appSidebar}"></div>
 
  <div class="container mt-4 flex-grow-1">
     <h2 class="mb-4 text-dark">📊 Sales Report</h2>

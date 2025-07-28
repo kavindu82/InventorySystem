@@ -30,7 +30,7 @@ public class InvoiceItem {
     private LocalDate arrivalDate;
     private double amount;
     private String currency;  // e.g., USD, CNY, LKR
-    private Double originalCostPrice;  // in foreign currency
+    private double originalCostPrice;  // in foreign currency
 
 }
 

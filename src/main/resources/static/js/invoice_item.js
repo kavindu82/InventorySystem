@@ -30,24 +30,31 @@ function openEditModal(button) {
     const row = button.closest("tr");
     const cells = row.querySelectorAll("td");
 
-    // Set the hidden ID for update
-    document.querySelector("#invoiceModal input[name='no']").value = button.getAttribute("data-id");
+    // Set hidden ID
+    document.querySelector("#invoiceModal input[name='no']").value = row.dataset.id;
 
+    // Standard fields
     document.querySelector("#invoiceModal select[name='itemNo']").value = cells[1].textContent.trim();
     document.querySelector("#invoiceModal select[name='itemName']").value = cells[2].textContent.trim();
     document.querySelector("#invoiceModal select[name='itemType']").value = cells[3].textContent.trim();
     document.querySelector("#invoiceModal select[name='supplierName']").value = cells[4].textContent.trim();
     document.querySelector("#invoiceModal input[name='quantity']").value = cells[5].textContent.trim();
     document.querySelector("#invoiceModal input[name='importSizeAndDimension']").value = cells[6].textContent.trim();
-    document.querySelector("#invoiceModal input[name='costPrice']").value = cells[7].textContent.trim();
-    document.querySelector("#invoiceModal input[name='sellingPrice']").value = cells[8].textContent.trim();
-    document.querySelector("#invoiceModal input[name='lowQuantity']").value = cells[9].textContent.trim();
-    document.querySelector("#invoiceModal input[name='arrivalDate']").value = cells[10].textContent.trim();
-    document.querySelector("#invoiceModal input[name='amount']").value = cells[11].textContent.trim();
 
-    // Show the modal
+    // ✅ Currency and Original Cost from dataset
+    document.querySelector("#invoiceModal select[name='currency']").value = row.dataset.currency || "LKR";
+    document.querySelector("#invoiceModal input[name='originalCostPrice']").value = row.dataset.originalCost || "";
+
+    document.querySelector("#invoiceModal input[name='costPrice']").value = cells[8].textContent.trim();
+    document.querySelector("#invoiceModal input[name='sellingPrice']").value = cells[9].textContent.trim();
+    document.querySelector("#invoiceModal input[name='lowQuantity']").value = cells[10].textContent.trim();
+    document.querySelector("#invoiceModal input[name='arrivalDate']").value = cells[11].textContent.trim();
+    document.querySelector("#invoiceModal input[name='amount']").value = cells[12].textContent.trim();
+
+    // Show modal
     new bootstrap.Modal(document.getElementById('invoiceModal')).show();
 }
+
 
 function openAddModal() {
     document.querySelector("#invoiceModal form").reset(); // clears all inputs
