@@ -7,6 +7,7 @@ import com.dem.Inventory.model.SaleType;
 import com.dem.Inventory.repository.InvoiceItemRepository;
 import com.dem.Inventory.repository.SaleRepository;
 import com.dem.Inventory.service.QuotationService;
+import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -20,6 +21,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.*;
 
+
+import java.util.*;
+
 @Controller
 @RequestMapping("/quotation")
 public class QuotationController {
@@ -31,6 +35,8 @@ public class QuotationController {
     @Autowired
     private QuotationService quotationService;
 
+    @Autowired
+    private EntityManager entityManager;
 
     // ✅ 1. Load Quotation Page
     @GetMapping
@@ -53,6 +59,7 @@ public class QuotationController {
         saleRepository.save(quotation);
         return "redirect:/quotation";
     }
+
 
     // ✅ 3. View Quotation Details for Modal
     @GetMapping("/view/{id}")
@@ -91,9 +98,18 @@ public class QuotationController {
         Sale quotation = saleRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid quotation ID"));
 
-        quotation.setType(SaleType.SALE);
+        // ✅ Generate new Sxxx invoice number
+        String maxInvoice = saleRepository.findMaxSaleInvoiceNumber();
+        String nextInvoice = "S001";
+        if (maxInvoice != null) {
+            int number = Integer.parseInt(maxInvoice.substring(1)) + 1;
+            nextInvoice = String.format("S%03d", number);
+        }
 
-        // Deduct stock for all items
+        quotation.setType(SaleType.SALE);
+        quotation.setInvoiceNumber(nextInvoice);
+
+        // ✅ Deduct stock for all items
         for (SaleItem item : quotation.getItems()) {
             InvoiceItem stockItem = invoiceItemRepository.findByItemNo(item.getItemNo())
                     .orElseThrow(() -> new RuntimeException("Item not found: " + item.getItemNo()));
@@ -105,8 +121,74 @@ public class QuotationController {
         }
 
         saleRepository.save(quotation);
-        return "redirect:/sales/add"; // Go to Add Sale page
+        return "redirect:/sales/add?converted=true";
     }
 
+
+    public String getNextSaleInvoiceNumber() {
+        String maxInvoice = saleRepository.findMaxSaleInvoiceNumber();
+        if (maxInvoice == null) {
+            return "S001";
+        }
+        int number = Integer.parseInt(maxInvoice.substring(1)) + 1;
+        return String.format("S%03d", number);
+    }
+
+
+    @GetMapping("/delete/{id}")
+    public String deleteQuotation(@PathVariable Long id) {
+        saleRepository.deleteById(id); // ✅ Delete from DB
+        return "redirect:/quotation?deleted=true";
+    }
+    @PostMapping("/update")
+    public String updateQuotation(@ModelAttribute Sale quotation) {
+
+        saleRepository.save(quotation);
+        return "redirect:/quotation";
+    }
+
+
+    @GetMapping("/api/{id}")
+    @ResponseBody
+    public Sale getSaleDetails(@PathVariable Long id) {
+        return saleRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid sale ID: " + id));
+    }
+
+    @GetMapping("/get/{id}")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> getQuotation(@PathVariable Long id) {
+        Optional<Sale> quotationOpt = saleRepository.findById(id);
+
+        if (quotationOpt.isPresent()) {
+            Sale quotation = quotationOpt.get();
+            Map<String, Object> data = new HashMap<>();
+            data.put("id", quotation.getId());
+            data.put("clientName", quotation.getClientName());
+            data.put("clientContact", quotation.getClientContact());
+            data.put("saleDate", quotation.getSaleDate() != null ? quotation.getSaleDate().toString() : "");
+
+
+            List<Map<String, Object>> items = new ArrayList<>();
+            for (SaleItem item : quotation.getItems()) {
+                Map<String, Object> itemData = new HashMap<>();
+                itemData.put("itemNo", item.getItemNo());
+                itemData.put("itemName", item.getItemName());
+                itemData.put("quantity", item.getQuantity());
+                itemData.put("sellingPrice", item.getSellingPrice());
+                itemData.put("amount", item.getAmount());
+                items.add(itemData);
+            }
+            data.put("items", items);
+
+            data.put("totalAmount",quotation.getTotalAmount());
+            data.put("discountPercentage",quotation.getDiscountPercentage());
+            data.put("finalAmount",quotation.getFinalAmount());
+
+            return ResponseEntity.ok(data);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+    }
 
 }

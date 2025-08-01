@@ -52,6 +52,9 @@ public interface SaleRepository extends JpaRepository<Sale, Long> {
             "WHERE s.saleDate >= :startDate AND s.type = 'SALE' GROUP BY s.saleDate ORDER BY s.saleDate ASC")
     List<Object[]> findSalesTrendLast7Days(@Param("startDate") LocalDate startDate);
 
+    @Query("SELECT MAX(s.invoiceNumber) FROM Sale s WHERE s.invoiceNumber LIKE 'S%'")
+    String findMaxSaleInvoiceNumber();
+
 
 }
 

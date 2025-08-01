@@ -80,37 +80,34 @@ async function fetchAndConvertCurrency() {
     const originalPrice = parseFloat(document.getElementById("originalCostPrice").value) || 0;
 
     if (currency === "LKR") {
-        // If local currency, no conversion needed
         document.getElementById("costPrice").value = originalPrice.toFixed(2);
         calculateAmount();
         return;
     }
 
     try {
-        const response = await fetch(`https://api.exchangerate.host/latest?base=${currency}&symbols=LKR`);
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
+        const response = await fetch(`https://open.er-api.com/v6/latest/${currency}`);
         const data = await response.json();
+        console.log("🌍 Exchange API Response:", data);
 
-        // Safely access nested properties
         const rate = data?.rates?.LKR;
         if (rate) {
-            const convertedPrice = (originalPrice * rate).toFixed(2);
-            document.getElementById("costPrice").value = convertedPrice;
+            const converted = (originalPrice * rate).toFixed(2);
+            document.getElementById("costPrice").value = converted;
         } else {
-            console.warn("⚠️ Exchange rate for LKR not found. Using fallback rate.");
-            const fallbackRate = 300; // fallback: 1 foreign = 300 LKR
-            const convertedPrice = (originalPrice * fallbackRate).toFixed(2);
-            document.getElementById("costPrice").value = convertedPrice;
+            alert("⚠️ LKR exchange rate not found.");
         }
 
         calculateAmount();
     } catch (error) {
-        console.error("Error fetching exchange rate:", error);
-        alert("⚠️ Unable to fetch exchange rate. Please check your internet connection.");
+        console.error("❌ Currency API error:", error);
+        alert("⚠️ Failed to fetch exchange rate. Using fallback.");
+        document.getElementById("costPrice").value = (originalPrice * 300).toFixed(2);
+        calculateAmount();
     }
 }
+
+
 
 
 

@@ -1,3 +1,5 @@
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <div th:fragment="appSidebar">
     <nav class="sidebar p-2">
         <h5 class="fw-bold">Menu</h5>
@@ -20,7 +22,10 @@
                 <span class="fw-bold">SALES</span>
                 <ul class="nav flex-column ms-3">
                     <li><a class="nav-link" th:href="@{/sales/add}">Add Sale</a></li>
-                    <li><a class="nav-link" th:href="@{/sales/reports}">Sales Reports</a></li>
+                    <li th:if="${#authorization.expression('hasRole(''ADMIN'')')}">
+                        <a class="nav-link" th:href="@{/sales/reports}">Sales Reports</a>
+                    </li>
+
                 </ul>
             </li>
             <li class="nav-item mt-3">

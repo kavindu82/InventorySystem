@@ -14,7 +14,7 @@ function addQuotationItemRow(item = {}) {
         <td>
             <input type="number" name="items[${quotationItemIndex}].quantity" class="form-control" required oninput="updateQuotationAmount(this)" value="${item.quantity || ''}">
         </td>
-        <td><input type="number" name="items[${quotationItemIndex}].price" class="form-control" required value="${item.price || ''}" oninput="updateQuotationAmount(this)"></td>
+        <td><input type="number" name="items[${quotationItemIndex}].sellingPrice" class="form-control" required value="${item.sellingPrice || ''}" oninput="updateQuotationAmount(this)"></td>
         <td><input type="number" name="items[${quotationItemIndex}].amount" class="form-control" readonly value="${item.amount || ''}"></td>
         <td><button type="button" class="btn btn-danger btn-sm" onclick="removeQuotationItemRow(this)">🗑️</button></td>
     `;
@@ -51,7 +51,7 @@ function fetchQuotationItemDetails(select) {
         .then(response => response.json())
         .then(data => {
             row.querySelector("input[name*='.itemName']").value = data.itemName;
-            row.querySelector("input[name*='.price']").value = data.sellingPrice;
+            row.querySelector("input[name*='.sellingPrice']").value = data.sellingPrice;
             updateQuotationAmount(row.querySelector("input[name*='.price']"));
         })
         .catch(error => console.error("Error fetching item details:", error));
@@ -60,7 +60,7 @@ function fetchQuotationItemDetails(select) {
 function updateQuotationAmount(input) {
     const row = input.closest("tr");
     const qty = parseFloat(row.querySelector("input[name*='.quantity']").value) || 0;
-    const price = parseFloat(row.querySelector("input[name*='.price']").value) || 0;
+    const price = parseFloat(row.querySelector("input[name*='.sellingPrice']").value) || 0;
     row.querySelector("input[name*='.amount']").value = (qty * price).toFixed(2);
     calculateQuotationTotal();
 }
@@ -91,10 +91,14 @@ function updateQuotationTotal() {
 
 function openAddQuotationModal() {
     document.querySelector("#quotationForm").reset();
+    document.querySelector("#quotationForm input[name='id']").value = "";  // Clear ID
     document.querySelector("#quotationItemsTable tbody").innerHTML = "";
     quotationItemIndex = 0;
+    document.getElementById("quotationSubmitBtn").innerText = "💾 Save Quotation";
+    document.getElementById("quotationForm").setAttribute("action", "/quotation/save");
     new bootstrap.Modal(document.getElementById('quotationModal')).show();
 }
+
 
 function removeQuotationItemRow(button) {
     button.closest("tr").remove();
@@ -122,10 +126,13 @@ function viewQuotation(button) {
         .then(response => response.text())
         .then(html => {
             document.getElementById("invoiceContent").innerHTML = html;
-            new bootstrap.Modal(document.getElementById('invoiceModal')).show();
+            const modal = document.getElementById('invoiceModal');
+            modal.setAttribute("data-quotation-id", quotationId);  // <-- Store ID
+            new bootstrap.Modal(modal).show();
         })
         .catch(error => console.error("Error loading quotation details:", error));
 }
+
 
 function printQuotation() {
     const printContents = document.getElementById("invoiceContent").innerHTML;
@@ -144,9 +151,50 @@ function printQuotation() {
     printWindow.document.close();
     printWindow.print();
 }
-
-function downloadQuotationPDF(button) {
+function openQuotationDeleteModal(button) {
     const quotationId = button.getAttribute("data-id");
-    window.open(`/quotation/pdf/${quotationId}`, "_blank");
+    document.getElementById("confirmDeleteBtn").href = `/quotation/delete/${quotationId}`;
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+    deleteModal.show();
 }
+
+function downloadQuotationPDFFromModal() {
+    const modal = document.getElementById("invoiceModal");
+    const id = modal.getAttribute("data-quotation-id");
+    if (id) {
+        window.open(`/quotation/pdf/${id}`, "_blank");
+    } else {
+        alert("Quotation ID not found.");
+    }
+}
+
+function editQuotation(button) {
+    const id = button.getAttribute("data-id");
+    quotationItemIndex = 0;
+
+    fetch(`/quotation/get/${id}`)
+        .then(response => response.json())
+        .then(data => {
+            document.querySelector("#quotationModal input[name='id']").value = data.id;
+            document.querySelector("#quotationModal input[name='clientName']").value = data.clientName;
+            document.querySelector("#quotationModal input[name='clientContact']").value = data.clientContact;
+            document.querySelector("#quotationModal input[name='saleDate']").value = data.saleDate;
+
+            // Clear and populate items
+            const tbody = document.querySelector("#quotationItemsTable tbody");
+            tbody.innerHTML = "";
+            data.items.forEach(item => addQuotationItemRow(item));
+
+            calculateQuotationTotal();
+            updateQuotationTotal();
+
+            // 👇👇 EDIT MODE SETUP 👇👇
+            document.getElementById("quotationSubmitBtn").innerText = "✏️ Update Quotation";
+            document.getElementById("quotationForm").setAttribute("action", "/quotation/update");
+
+            new bootstrap.Modal(document.getElementById('quotationModal')).show();
+        })
+        .catch(error => console.error("Error loading quotation for edit:", error));
+}
+
 
