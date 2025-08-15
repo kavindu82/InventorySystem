@@ -45,13 +45,6 @@ public class InvoiceItemController {
     @PostMapping("/save")
     public String saveInvoiceItem(@ModelAttribute InvoiceItem invoiceItem) {
         try {
-            // ✅ Convert to LKR if needed
-            if ("LKR".equalsIgnoreCase(invoiceItem.getCurrency())) {
-                invoiceItem.setCostPrice(invoiceItem.getOriginalCostPrice());
-            } else {
-                double convertedPrice = fetchConvertedPrice(invoiceItem.getCurrency(), invoiceItem.getOriginalCostPrice());
-                invoiceItem.setCostPrice(convertedPrice);
-            }
 
             // ✅ Calculate amount
             double amount = invoiceItem.getCostPrice() * invoiceItem.getQuantity();
@@ -85,41 +78,6 @@ public class InvoiceItemController {
     public String deleteInvoiceItem(@PathVariable Long id) {
         invoiceItemRepository.deleteById(id);
         return "redirect:/item/invoice?success=delete";
-    }
-
-    private double fetchConvertedPrice(String currency, double amount) {
-        RestTemplate restTemplate = new RestTemplate();
-        String apiUrl = "https://api.exchangerate.host/latest?base=" + currency + "&symbols=LKR";
-
-        try {
-            ResponseEntity<Map> response = restTemplate.getForEntity(apiUrl, Map.class);
-
-            if (response.getStatusCode().is2xxSuccessful()) {
-                Map<String, Object> body = response.getBody();
-                if (body != null && body.containsKey("rates")) {
-                    Map<String, Object> ratesMap = (Map<String, Object>) body.get("rates");
-                    if (ratesMap != null && ratesMap.containsKey("LKR")) {
-                        Double rate = Double.parseDouble(ratesMap.get("LKR").toString());
-                        return amount * rate;
-                    } else {
-                        System.err.println("⚠️ API response missing LKR rate: " + body);
-                        throw new RuntimeException("Exchange rate for LKR not found.");
-                    }
-                } else {
-                    System.err.println("⚠️ Invalid API response: " + body);
-                    throw new RuntimeException("Invalid response from currency API.");
-                }
-            } else {
-                System.err.println("⚠️ API call failed: HTTP " + response.getStatusCode());
-                throw new RuntimeException("Failed to fetch exchange rate");
-            }
-        } catch (Exception ex) {
-            System.err.println("⚠️ Currency API error: " + ex.getMessage());
-            // Fallback to default rate
-            double fallbackRate = 300.0; // Example: 1 USD = 300 LKR
-            System.out.println("✅ Using fallback rate: " + fallbackRate);
-            return amount * fallbackRate;
-        }
     }
 
 

@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -124,28 +125,40 @@ public class QuotationController {
         return "redirect:/sales/add?converted=true";
     }
 
-
-    public String getNextSaleInvoiceNumber() {
-        String maxInvoice = saleRepository.findMaxSaleInvoiceNumber();
-        if (maxInvoice == null) {
-            return "S001";
-        }
-        int number = Integer.parseInt(maxInvoice.substring(1)) + 1;
-        return String.format("S%03d", number);
-    }
-
-
     @GetMapping("/delete/{id}")
     public String deleteQuotation(@PathVariable Long id) {
         saleRepository.deleteById(id); // ✅ Delete from DB
         return "redirect:/quotation?deleted=true";
     }
     @PostMapping("/update")
+    @Transactional
     public String updateQuotation(@ModelAttribute Sale quotation) {
+        Sale existing = saleRepository.findById(quotation.getId())
+                .orElseThrow(() -> new IllegalArgumentException("Invalid quotation ID"));
 
-        saleRepository.save(quotation);
-        return "redirect:/quotation";
+        // Update fields
+        existing.setClientName(quotation.getClientName());
+        existing.setClientContact(quotation.getClientContact());
+        existing.setSaleDate(quotation.getSaleDate());
+        existing.setTotalAmount(quotation.getTotalAmount());
+        existing.setDiscountPercentage(quotation.getDiscountPercentage());
+        existing.setFinalAmount(quotation.getFinalAmount());
+
+        // Always keep payment status as QUTN
+        existing.setPaymentStatus("QUTN");
+
+        // Replace items
+        existing.getItems().clear();
+        for (SaleItem item : quotation.getItems()) {
+            item.setSale(existing); // link item to parent quotation
+            existing.getItems().add(item);
+        }
+
+        saleRepository.save(existing);
+
+        return "redirect:/quotation?success=update";
     }
+
 
 
     @GetMapping("/api/{id}")
@@ -157,38 +170,9 @@ public class QuotationController {
 
     @GetMapping("/get/{id}")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> getQuotation(@PathVariable Long id) {
-        Optional<Sale> quotationOpt = saleRepository.findById(id);
-
-        if (quotationOpt.isPresent()) {
-            Sale quotation = quotationOpt.get();
-            Map<String, Object> data = new HashMap<>();
-            data.put("id", quotation.getId());
-            data.put("clientName", quotation.getClientName());
-            data.put("clientContact", quotation.getClientContact());
-            data.put("saleDate", quotation.getSaleDate() != null ? quotation.getSaleDate().toString() : "");
-
-
-            List<Map<String, Object>> items = new ArrayList<>();
-            for (SaleItem item : quotation.getItems()) {
-                Map<String, Object> itemData = new HashMap<>();
-                itemData.put("itemNo", item.getItemNo());
-                itemData.put("itemName", item.getItemName());
-                itemData.put("quantity", item.getQuantity());
-                itemData.put("sellingPrice", item.getSellingPrice());
-                itemData.put("amount", item.getAmount());
-                items.add(itemData);
-            }
-            data.put("items", items);
-
-            data.put("totalAmount",quotation.getTotalAmount());
-            data.put("discountPercentage",quotation.getDiscountPercentage());
-            data.put("finalAmount",quotation.getFinalAmount());
-
-            return ResponseEntity.ok(data);
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        }
+    public Sale getQuotation(@PathVariable Long id) {
+        return saleRepository.findById(id).orElse(null);
     }
+
 
 }

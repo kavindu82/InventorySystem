@@ -32,13 +32,13 @@ public class Sale {
 
 
 
-    @OneToMany(mappedBy = "sale", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "sale", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<SaleItem> items = new ArrayList<>();
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private SaleType type = SaleType.SALE; // Default type
+    private SaleType type = SaleType.SALE;
 
 
 

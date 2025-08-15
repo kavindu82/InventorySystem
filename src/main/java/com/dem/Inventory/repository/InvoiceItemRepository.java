@@ -17,5 +17,6 @@ public interface InvoiceItemRepository extends JpaRepository<InvoiceItem, Long> 
     @Query("SELECT i FROM InvoiceItem i WHERE i.quantity <= i.lowQuantity ORDER BY i.quantity ASC")
     List<InvoiceItem> findLowStockItems();
 
-
+    @Query("SELECT i FROM InvoiceItem i ")
+    List<InvoiceItem> findAllStockItems();
 }

@@ -29,7 +29,7 @@
         <!-- Summary Cards -->
         <div class="row g-3 mb-4">
             <div class="col-md-3">
-                <div class="card text-bg-primary">
+                <div class="card text-bg-primary" role="button" onclick="openItemsReportModal()">
                     <div class="card-body">
                         <h5 class="card-title">📦 Total Inventory Items</h5>
                         <p class="card-text fs-4" th:text="${totalItems != null ? totalItems : 0}">0</p>
@@ -116,6 +116,48 @@
                 </table>
             </div>
             <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">❌ Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="allStockModal" tabindex="-1" aria-labelledby="allStockModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="allStockModalLabel">All Inventory Items</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <table class="table table-striped table-sm mb-0">
+                    <thead class="table-light">
+                    <tr>
+                        <th>Item No</th>
+                        <th>Shipping Mark</th>
+                        <th>Item Name</th>
+                        <th>Quantity</th>
+                        <th>Original Cost Price</th>
+                        <th>Converted Cost Price</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:if="${AllStockItems == null or #lists.isEmpty(AllStockItems)}">
+                        <td colspan="4" class="text-center text-muted">🎉 No Inventory items!</td>
+                    </tr>
+                    <tr th:each="item : ${AllStockItems}">
+                        <td th:text="${item.itemNo}">ITEM001</td>
+                        <td th:text="${item.itemName}">Sample Item</td>
+                        <td th:text="${item.itemType}">Item25</td>
+                        <td th:text="${item.quantity}">5</td>
+                        <td th:text="${item.originalCostPrice}">1000</td>
+                        <td th:text="${item.costPrice}">2000</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-success" onclick="downloadAllStockExcel()">⬇️ Download Excel</button>
                 <button class="btn btn-secondary" data-bs-dismiss="modal">❌ Close</button>
             </div>
         </div>

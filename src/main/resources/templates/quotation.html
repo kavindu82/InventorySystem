@@ -42,7 +42,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr th:each="quotation : ${quotations}">
+                     <tr th:each="quotation : ${quotations}">
                         <td th:text="${quotation.invoiceNumber}">Q001</td>
                         <td th:text="${quotation.clientName}">John Doe</td>
                         <td th:text="${quotation.saleDate}">2025-07-17</td>
@@ -53,7 +53,7 @@
                             <a class="btn btn-sm btn-success" th:href="@{/quotation/convert/{id}(id=${quotation.id})}">💵 </a>
                             <a class="btn btn-sm btn-danger" href="#" th:attr="data-id=${quotation.id}" onclick="openQuotationDeleteModal(this)">🗑️ </a>
                         </td>
-                    </tr>
+                     </tr>
                     </tbody>
                 </table>
             </div>

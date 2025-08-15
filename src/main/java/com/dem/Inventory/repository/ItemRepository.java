@@ -13,6 +13,6 @@ public interface ItemRepository extends JpaRepository<Item ,String> {
     List<String> findDistinctItemNos();
 
     Optional<Item> findFirstByItemType(String itemType);
-    Item findByItemType(String itemType);
+
 
 }

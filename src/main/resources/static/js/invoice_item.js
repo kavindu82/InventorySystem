@@ -75,7 +75,7 @@ invoiceModal.addEventListener('show.bs.modal', function () {
     }
 });
 
-async function fetchAndConvertCurrency() {
+/*async function fetchAndConvertCurrency() {
     const currency = document.getElementById("currency").value;
     const originalPrice = parseFloat(document.getElementById("originalCostPrice").value) || 0;
 
@@ -105,9 +105,38 @@ async function fetchAndConvertCurrency() {
         document.getElementById("costPrice").value = (originalPrice * 300).toFixed(2);
         calculateAmount();
     }
+}*/
+
+function initSelect2InModal() {
+    if (!window.jQuery || !$.fn.select2) {
+        console.error("Select2 not loaded");
+        return;
+    }
+
+    $('.searchable').each(function () {
+        // Avoid re-initializing the same element
+        if ($(this).data('select2')) return;
+
+        $(this).select2({
+            placeholder: "Select an option",
+            allowClear: true,
+            width: '100%',
+            // Keep dropdown inside the modal so it doesn't get clipped
+            dropdownParent: $('#invoiceModal')
+        });
+    });
+
+    // Optional: fix focus trap if needed
+    if ($.fn.modal && $.fn.modal.Constructor) {
+        $.fn.modal.Constructor.prototype._enforceFocus = function () {};
+    }
 }
 
+// Init once on page load
+$(initSelect2InModal);
 
+// Ensure proper rendering when modal opens
+$(document).on('shown.bs.modal', '#invoiceModal', initSelect2InModal);
 
 
 

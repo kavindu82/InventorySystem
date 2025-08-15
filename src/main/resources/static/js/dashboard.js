@@ -52,3 +52,13 @@ function openLowStockModal() {
     const modal = new bootstrap.Modal(document.getElementById('lowStockModal'));
     modal.show();
 }
+
+function openItemsReportModal() {
+    const modal = new bootstrap.Modal(document.getElementById('allStockModal'));
+    modal.show();
+}
+
+function downloadAllStockExcel() {
+    window.location.href = '/all-stock.xlsx';
+}
+
