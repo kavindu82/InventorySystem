@@ -1,5 +1,6 @@
 package com.dem.Inventory;
 
+import jakarta.annotation.PostConstruct;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -11,6 +12,12 @@ public class InventoryManagementSystemApplication {
 		SpringApplication.run(InventoryManagementSystemApplication.class, args);
 
 
+	}
+
+	@PostConstruct
+	public void printDbUrl() {
+		System.out.println(">>> MYSQL_URL = " + System.getenv("MYSQL_URL"));
+		System.out.println(">>> MYSQLHOST = " + System.getenv("MYSQLHOST"));
 	}
 
 }
