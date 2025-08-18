@@ -50,7 +50,7 @@
                         <td>
                             <a class="btn btn-sm btn-warning" href="#" th:attr="data-id=${quotation.id}" onclick="editQuotation(this)">✏️</a>
                             <a class="btn btn-sm btn-info" href="#" th:attr="data-id=${quotation.id}" onclick="viewQuotation(this)">👁️ </a>
-                            <a class="btn btn-sm btn-success" th:href="@{/quotation/convert/{id}(id=${quotation.id})}">💵 </a>
+                            <a class="btn btn-sm btn-success" href="#" th:attr="data-id=${quotation.id}" onclick="openConvertQuotationModal(this)" title="Convert to Sale">💵</a>
                             <a class="btn btn-sm btn-danger" href="#" th:attr="data-id=${quotation.id}" onclick="openQuotationDeleteModal(this)">🗑️ </a>
                         </td>
                      </tr>
@@ -168,6 +168,27 @@
         </div>
     </div>
 </div>
+<!-- Convert → Sale Confirmation Modal -->
+<div class="modal fade" id="convertConfirmModal" tabindex="-1" aria-labelledby="convertConfirmLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="convertConfirmLabel">Convert Quotation to Sale</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                This will convert the quotation to a <b>Sale</b>
+                <br><br>
+                Are you sure you want to continue?
+            </div>
+            <div class="modal-footer">
+                <a id="confirmConvertBtn" class="btn btn-success">Yes, Convert</a>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script th:src="@{/js/quotation.js}"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

@@ -71,7 +71,7 @@ public class DashboardController {
     // ✅ Excel download for AllStockItems
     @GetMapping("/all-stock.xlsx")
     public ResponseEntity<byte[]> downloadAllStockExcel() {
-        List<InvoiceItem> rows = invoiceItemRepository.findAllStockItems(); // you already use this
+        List<InvoiceItem> rows = invoiceItemRepository.findAllStockItems();
 
         try (Workbook wb = new XSSFWorkbook()) {
             Sheet sh = wb.createSheet("All Inventory Items");

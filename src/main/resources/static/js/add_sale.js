@@ -37,14 +37,18 @@ function populateItemNoDropdown(selectElement, selectedValue = "") {
                 const option = document.createElement("option");
                 option.value = item.itemNo;
                 option.textContent = item.itemNo;
-                if (item.itemNo === selectedValue) {
-                    option.selected = true;
-                }
                 selectElement.appendChild(option);
             });
+
+            // If editing: preselect and fetch details so we get data-available + Available: X
+            if (selectedValue) {
+                selectElement.value = selectedValue;
+                fetchItemDetails(selectElement); // <-- ensures quantity constraints & Available: X
+            }
         })
         .catch(error => console.error("Error loading items:", error));
 }
+
 
 function fetchItemDetails(select) {
     const itemNo = select.value;
@@ -241,7 +245,15 @@ function printInvoice() {
     printWindow.print();
 }
 
-function downloadInvoicePDF() {
-    alert("PDF download feature coming soon!"); // Placeholder for now
+// Download PDF using the stashed id (mirrors your quotation code)
+function downloadSalePDFFromModal() {
+    const modal = document.getElementById("saleInvoiceModal");
+    const id = modal.getAttribute("data-sale-id");
+    if (id) {
+        window.open(`/sales/pdf/${id}`, "_blank");
+    } else {
+        alert("Invoice ID not found.");
+    }
 }
+
 

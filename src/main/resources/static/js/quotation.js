@@ -106,7 +106,7 @@ function removeQuotationItemRow(button) {
     calculateQuotationTotal();
 }
 
-function reindexQuotationItemRows() {
+function reindexQuotationItemRows() {0
     const rows = document.querySelectorAll("#quotationItemsTable tbody tr");
     rows.forEach((row, index) => {
         row.querySelectorAll("input, select").forEach(input => {
@@ -195,6 +195,17 @@ function editQuotation(button) {
             new bootstrap.Modal(document.getElementById('quotationModal')).show();
         })
         .catch(error => console.error("Error loading quotation for edit:", error));
+}
+
+function openConvertQuotationModal(button) {
+    const id = button.getAttribute("data-id");
+    // Build the final convert URL
+    const url = `/quotation/convert/${id}`;
+    // Set link on the confirm button
+    document.getElementById("confirmConvertBtn").setAttribute("href", url);
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('convertConfirmModal'));
+    modal.show();
 }
 
 
