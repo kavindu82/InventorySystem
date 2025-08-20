@@ -1,17 +1,15 @@
 package com.dem.Inventory.controller;
-import com.dem.Inventory.model.InvoiceItem;
+
 import com.dem.Inventory.model.Item;
 import com.dem.Inventory.repository.InvoiceItemRepository;
 import com.dem.Inventory.repository.ItemRepository;
 import com.dem.Inventory.service.ItemService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 
@@ -19,6 +17,8 @@ import java.util.Optional;
 @RequestMapping("/item")
 public class ItemController {
 
+    @Autowired
+    private InvoiceItemRepository invoiceItemRepository;
     @Autowired
     private ItemRepository itemRepository;
     @Autowired
@@ -53,8 +53,21 @@ public class ItemController {
     }
 
     @GetMapping("/delete/{id}")
-    public String deleteItem(@PathVariable String id) {
-        itemService.deleteItemById(id);
+    public String deleteItem(@PathVariable String id, RedirectAttributes redirectAttributes) {
+        Item item = itemRepository.findById(id).orElse(null);
+        if (item == null) {
+            redirectAttributes.addFlashAttribute("error", "❌ Item not found.");
+            return "redirect:/item";
+        }
+
+        boolean inUse = invoiceItemRepository.existsByItemNo(item.getItemNo());
+        if (inUse) {
+            redirectAttributes.addFlashAttribute("error", "❌ Cannot delete. Item is used in invoice items.");
+            return "redirect:/item";
+        }
+
+        itemRepository.delete(item);
+        redirectAttributes.addAttribute("success", "delete");
         return "redirect:/item/add?success=delete";
     }
 
@@ -62,6 +75,13 @@ public class ItemController {
     public String getItemNameByType(@RequestParam String itemType) {
         Optional<Item> item = itemRepository.findFirstByItemType(itemType);
         return item.map(Item::getItemName).orElse("");
+    }
+
+    @GetMapping("/check-invoice-usage/{itemNo}")
+    @ResponseBody
+    public Map<String, Boolean> checkInvoiceUsage(@PathVariable String itemNo) {
+        boolean inUse = invoiceItemRepository.existsByItemNo(itemNo);
+        return Collections.singletonMap("inUse", inUse);
     }
 
 }

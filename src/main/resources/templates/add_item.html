@@ -32,6 +32,10 @@
       ❌ This item already exists!
     </div>
 
+    <div th:if="${error}" class="alert alert-danger fade-out" role="alert">
+      <span th:text="${error}"></span>
+    </div>
+
 
     <!-- ✅ Item Form -->
     <div class="card mb-4">
@@ -89,11 +93,9 @@
                                                           data-bs-target="#editModal"
                                                           th:attr="data-id=${i.id}, data-itemno=${i.itemNo}, data-itemname=${i.itemName}, data-itemtype=${i.itemType}"
                                                           onclick="fillEditModal(this)">✏️</a>
-              <a th:href="@{/item/delete/{id}(id=${i.id})}" class="btn btn-sm btn-danger"
-                                                            data-bs-toggle="modal"
-                                                            data-bs-target="#deleteModal"
-                                                            th:attr="data-id=${i.id}"
-                                                            onclick="prepareDelete(this)">🗑️</a>
+              <a href="#" class="btn btn-sm btn-danger"
+                 th:attr="data-id=${i.id}"
+                 onclick="prepareDelete(event, this)">🗑️</a>
             </td>
           </tr>
           </tbody>
@@ -152,6 +154,24 @@
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
         </div>
       </form>
+    </div>
+  </div>
+</div>
+
+<!-- Info Modal -->
+<div class="modal fade" id="infoModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-warning">
+        <h5 class="modal-title">⚠️ Action Not Allowed</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="infoModalBody">
+        <!-- message will be set by JS -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">OK</button>
+      </div>
     </div>
   </div>
 </div>

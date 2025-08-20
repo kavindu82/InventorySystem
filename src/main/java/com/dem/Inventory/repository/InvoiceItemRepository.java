@@ -19,4 +19,8 @@ public interface InvoiceItemRepository extends JpaRepository<InvoiceItem, Long> 
 
     @Query("SELECT i FROM InvoiceItem i ")
     List<InvoiceItem> findAllStockItems();
+
+    boolean existsByItemNo(String itemNo);
+
+    boolean existsBySupplierName(String supplierName);
 }

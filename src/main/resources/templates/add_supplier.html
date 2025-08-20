@@ -28,6 +28,10 @@
             ❌ This supplier already exists!
         </div>
 
+        <div th:if="${error}" class="alert alert-danger fade-out" role="alert">
+            <span th:text="${error}"></span>
+        </div>
+
         <!-- Supplier Form -->
         <div class="card mb-4">
             <div class="card-body">
@@ -73,8 +77,9 @@
                             <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editModal"
                                     th:attr="data-code=${s.supplierCode}, data-name=${s.supplierName}, data-address=${s.supplierAddress}"
                                     onclick="fillEditModal(this)">✏️</button>
-                            <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal"
-                                    th:attr="data-code=${s.supplierCode}" onclick="prepareDelete(this)">🗑️</button>
+                            <button class="btn btn-sm btn-danger"
+                                    th:attr="data-code=${s.supplierCode}"
+                                    onclick="prepareDeleteSupplier(event, this)">🗑️</button>
                         </td>
                     </tr>
                     </tbody>
@@ -129,6 +134,25 @@
         </form>
     </div>
 </div>
+
+<!-- Info Modal -->
+<div class="modal fade" id="supplierInfoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title">⚠️ Action Not Allowed</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="supplierInfoBody">
+                <!-- message set by JS -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 <script th:src="@{/js/add_supplier.js}"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

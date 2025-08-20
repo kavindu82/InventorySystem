@@ -3,10 +3,33 @@ function fillEditModal(button) {
     document.getElementById('editName').value = button.getAttribute('data-name');
     document.getElementById('editAddress').value = button.getAttribute('data-address');
 }
-function prepareDelete(button) {
+function prepareDeleteSupplier(e, button) {
+    if (e) { e.preventDefault(); e.stopPropagation(); }
+
     const code = button.getAttribute('data-code');
-    document.getElementById('deleteForm').action = '/supplier/delete/' + code;
+
+    // Pre-check via API so only one modal appears
+    fetch(`/supplier/check-usage/${code}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.inUse) {
+                // Show info popup only
+                document.getElementById('supplierInfoBody').textContent =
+                    "❌ Cannot delete. This supplier is already used in Invoice Items.";
+                new bootstrap.Modal(document.getElementById('supplierInfoModal')).show();
+                return;
+            }
+            // Otherwise show the delete confirm modal
+            document.getElementById('deleteForm').action = '/supplier/delete/' + code;
+            new bootstrap.Modal(document.getElementById('deleteModal')).show();
+        })
+        .catch(() => {
+            document.getElementById('supplierInfoBody').textContent =
+                "⚠️ Could not verify usage. Please try again.";
+            new bootstrap.Modal(document.getElementById('supplierInfoModal')).show();
+        });
 }
+
 document.getElementById('supplierSearch').addEventListener('keyup', function () {
     let filter = this.value.toLowerCase();
     let rows = document.querySelectorAll('#supplierTable tbody tr');
