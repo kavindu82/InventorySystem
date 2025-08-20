@@ -24,7 +24,6 @@ public class ItemController {
     @Autowired
     private ItemService itemService;
 
-
     @GetMapping("/add")
     public String viewItemPage(Model model) {
         model.addAttribute("item", new Item());
@@ -45,8 +44,6 @@ public class ItemController {
 
         return "redirect:/item/add?success=" + (isNew ? "add" : "update");
     }
-
-
 
     @GetMapping("/edit/{id}")
     public String editItem(@PathVariable String id, Model model) {

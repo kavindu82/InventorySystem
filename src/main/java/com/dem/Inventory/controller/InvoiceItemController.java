@@ -5,14 +5,10 @@ import com.dem.Inventory.repository.InvoiceItemRepository;
 import com.dem.Inventory.repository.ItemRepository;
 import com.dem.Inventory.repository.SupplierRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
-
 import java.util.List;
-import java.util.Map;
 
 @Controller
 @RequestMapping("/item/invoice")
@@ -22,7 +18,7 @@ public class InvoiceItemController {
     private InvoiceItemRepository invoiceItemRepository;
 
     @Autowired
-    private ItemRepository itemRepository; // to load itemNo, name, etc.
+    private ItemRepository itemRepository;
 
     @Autowired
     private SupplierRepository supplierRepository;
@@ -46,7 +42,6 @@ public class InvoiceItemController {
     public String saveInvoiceItem(@ModelAttribute InvoiceItem invoiceItem) {
         try {
 
-            // ✅ Calculate amount
             double amount = invoiceItem.getCostPrice() * invoiceItem.getQuantity();
             invoiceItem.setAmount(amount);
 

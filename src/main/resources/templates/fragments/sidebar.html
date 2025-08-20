@@ -22,17 +22,22 @@
                 <span class="fw-bold">SALES</span>
                 <ul class="nav flex-column ms-3">
                     <li><a class="nav-link" th:href="@{/sales/add}">Add Sale</a></li>
-                    <li th:if="${#authorization.expression('hasRole(''ADMIN'')')}">
+                    <li >
                         <a class="nav-link" th:href="@{/sales/reports}">Sales Reports</a>
                     </li>
-
                 </ul>
             </li>
             <li class="nav-item mt-3">
-                <span class="fw-bold">📜 QUOTATION</span>
+                <span class="fw-bold">QUOTATION</span>
                 <ul class="nav flex-column ms-3">
-                    <li><a class="nav-link" th:href="@{/quotation}">➕ Add Quotation</a></li>
+                    <li><a class="nav-link" th:href="@{/quotation}">Add Quotation</a></li>
                 </ul>
+            </li>
+            <li class="nav-item mt-3">
+             <span class="fw-bold"> Permissions </span>
+                <li sec:authorize="hasRole('ADMIN')">
+                   <a class="nav-link" href="/admin/permissions">User Permissions</a>
+                </li>
             </li>
         </ul>
     </nav>

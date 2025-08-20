@@ -9,7 +9,7 @@ function addSaleItemRow(item = {}) {
      <tr>
     <input type="hidden" name="items[${saleItemIndex}].id" value="${item.id || ''}">
     <td>
-        <select name="items[${saleItemIndex}].itemNo" class="form-select" onchange="fetchItemDetails(this)" required>
+        <select name="items[${saleItemIndex}].itemNo" class="form-select itemNo-select" onchange="fetchItemDetails(this)" required>
             <option value="">--Select Item--</option>
         </select>
     </td>
@@ -27,6 +27,13 @@ function addSaleItemRow(item = {}) {
     saleItemIndex++;
 
     populateItemNoDropdown(row.querySelector("select[name*='itemNo']"), item.itemNo);
+
+    $(row).find(".itemNo-select").select2({
+        placeholder: "--Select Item--",
+        allowClear: true,
+        width: '100%',
+        dropdownParent: $('#saleModal')
+    });
 }
 
 function populateItemNoDropdown(selectElement, selectedValue = "") {
@@ -48,7 +55,6 @@ function populateItemNoDropdown(selectElement, selectedValue = "") {
         })
         .catch(error => console.error("Error loading items:", error));
 }
-
 
 function fetchItemDetails(select) {
     const itemNo = select.value;
@@ -193,7 +199,6 @@ function updateDiscountedTotal() {
     discountedTotalField.value = discountedTotal.toFixed(2);
 }
 
-
 function viewInvoice(button) {
     const saleId = button.getAttribute("data-id");
     fetch(`/sales/invoice/${saleId}`)
@@ -255,5 +260,6 @@ function downloadSalePDFFromModal() {
         alert("Invoice ID not found.");
     }
 }
+
 
 
