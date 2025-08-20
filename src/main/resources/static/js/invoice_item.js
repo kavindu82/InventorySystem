@@ -1,4 +1,24 @@
 
+let __syncing = false;
+
+function safeSetSelect2(selector, value) {
+    __syncing = true;
+    const $sel = $(selector);
+
+    if (value == null || value === "") {
+        $sel.val(null).trigger('change.select2');
+        __syncing = false;
+        return;
+    }
+    // ensure option exists
+    if ($sel.find(`option[value="${CSS.escape(value)}"]`).length === 0) {
+        $sel.append(new Option(value, value, false, false));
+    }
+    // update UI without re-entering handlers
+    $sel.val(value).trigger('change.select2');
+    __syncing = false;
+}
+
 function calculateAmount() {
     const qty = toNumber(document.getElementById("quantity").value);
     const price = toNumber(document.getElementById("originalCostPrice").value);
@@ -73,10 +93,10 @@ function openEditModal(button) {
     // When modal is fully shown, set Select2 fields with change events
     const handler = function () {
         // Item selects (use cell text exactly as stored)
-        setSelect2Value("#invoiceModal select[name='itemNo']",   cells[1].textContent.trim());
-        setSelect2Value("#invoiceModal select[name='itemName']", cells[2].textContent.trim());
-        setSelect2Value("#invoiceModal select[name='itemType']", cells[3].textContent.trim());
-        setSelect2Value("#invoiceModal select[name='supplierName']", cells[4].textContent.trim());
+        safeSetSelect2("#invoiceModal select[name='itemNo']",        cells[1].textContent.trim());
+        safeSetSelect2("#invoiceModal select[name='itemName']",      cells[2].textContent.trim());
+        safeSetSelect2("#invoiceModal select[name='itemType']",      cells[3].textContent.trim());
+        safeSetSelect2("#invoiceModal select[name='supplierName']",  cells[4].textContent.trim());
 
         // Update button label
         document.getElementById("submitBtn").textContent = "Update Item";
@@ -281,4 +301,32 @@ function attachMoneyFormatters() {
     });
 }
 attachMoneyFormatters();
+
+$(document).on('change', '#invoiceModal select[name="itemNo"]', function () {
+    if (__syncing) return;
+    const no = $(this).val();
+    if (!no) return;
+    fetch(`/item/invoice/${encodeURIComponent(no)}`)
+        .then(r => r.ok ? r.json() : Promise.reject())
+        .then(data => {
+            safeSetSelect2('#invoiceModal select[name="itemName"]', data.itemName);
+            safeSetSelect2('#invoiceModal select[name="itemType"]', data.itemType);
+        })
+        .catch(() => alert("⚠️ Couldn't load item by number"));
+});
+
+// Item Name -> fetch no & type
+$(document).on('change', '#invoiceModal select[name="itemName"]', function () {
+    if (__syncing) return;
+    const name = $(this).val();
+    if (!name) return;
+    fetch(`/item/invoice/by-name/${encodeURIComponent(name)}`)
+        .then(r => r.ok ? r.json() : Promise.reject())
+        .then(data => {
+            safeSetSelect2('#invoiceModal select[name="itemNo"]',   data.itemNo);
+            safeSetSelect2('#invoiceModal select[name="itemType"]', data.itemType);
+        })
+        .catch(() => alert("⚠️ Couldn't load item by name"));
+});
+
 

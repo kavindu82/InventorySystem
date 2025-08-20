@@ -23,4 +23,6 @@ public interface InvoiceItemRepository extends JpaRepository<InvoiceItem, Long> 
     boolean existsByItemNo(String itemNo);
 
     boolean existsBySupplierName(String supplierName);
+
+
 }

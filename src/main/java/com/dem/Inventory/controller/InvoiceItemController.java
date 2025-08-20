@@ -1,10 +1,14 @@
 package com.dem.Inventory.controller;
 
+import com.dem.Inventory.dto.ItemLookupDto;
 import com.dem.Inventory.model.InvoiceItem;
+import com.dem.Inventory.model.Item;
 import com.dem.Inventory.repository.InvoiceItemRepository;
 import com.dem.Inventory.repository.ItemRepository;
 import com.dem.Inventory.repository.SupplierRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -75,6 +79,19 @@ public class InvoiceItemController {
         return "redirect:/item/invoice?success=delete";
     }
 
+    @GetMapping("/{itemNo}")
+    public ResponseEntity<ItemLookupDto> getByItemNo(@PathVariable String itemNo) {
+        return itemRepository.findByItemNoIgnoreCase(itemNo)
+                .map(it -> ResponseEntity.ok(new ItemLookupDto(it.getItemNo(), it.getItemName(), it.getItemType())))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/by-name/{name}")
+    public ResponseEntity<ItemLookupDto> getByItemName(@PathVariable String name) {
+        return itemRepository.findByItemNameIgnoreCase(name)
+                .map(it -> ResponseEntity.ok(new ItemLookupDto(it.getItemNo(), it.getItemName(), it.getItemType())))
+                .orElse(ResponseEntity.notFound().build());
+    }
 
 }
 

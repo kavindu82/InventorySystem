@@ -1,5 +1,6 @@
 package com.dem.Inventory.repository;
 
+import com.dem.Inventory.model.InvoiceItem;
 import com.dem.Inventory.model.Item;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -14,5 +15,7 @@ public interface ItemRepository extends JpaRepository<Item ,String> {
 
     Optional<Item> findFirstByItemType(String itemType);
 
+    Optional<Item> findByItemNoIgnoreCase(String itemNo);
+    Optional<Item> findByItemNameIgnoreCase(String itemName);
 
 }
