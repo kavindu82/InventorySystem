@@ -45,11 +45,12 @@ function fillEditModal(button) {
 
 // 🔍 Search by Item No
 document.getElementById('searchInput').addEventListener('keyup', function () {
-    let filter = this.value.toLowerCase();
-    let rows = document.querySelectorAll("#itemTable tbody tr");
+    const query = this.value.toLowerCase();
+    const rows = document.querySelectorAll("#itemTable tbody tr");
 
     rows.forEach(row => {
-        let itemNo = row.cells[1].textContent.toLowerCase();
-        row.style.display = itemNo.includes(filter) ? '' : 'none';
+        const cells = row.querySelectorAll("td");
+        const match = Array.from(cells).some(td => td.textContent.toLowerCase().includes(query));
+        row.style.display = match ? "" : "none";
     });
 });

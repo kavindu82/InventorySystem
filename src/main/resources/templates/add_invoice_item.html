@@ -56,7 +56,7 @@
                                         <option value="">-- Select Item Name --</option>
                                         <option th:each="item : ${items}" th:value="${item.itemName}" th:text="${item.itemName}"></option>
                                     </select> </div>
-                                <div class="col-md-3 mb-3">
+                                <div class="col-md-3 mb-3" >
                                     <label>Item Type</label>
                                     <select class="form-select searchable" th:field="*{itemType}" required>
                                        <option value="">-- Select Item Type --</option>
@@ -97,7 +97,7 @@
                                     </div>
 
                                     <!-- Converted Price -->
-                                    <div class="col-md-4 mb-3">
+                                    <div class="col-md-4 mb-3" >
                                         <label>Cost Price (LKR)</label>
                                         <input type="text" step="1" class="form-control" id="costPrice" name="costPrice" required>
                                     </div>
@@ -174,9 +174,11 @@
                         <td>
                             <a class="btn btn-sm btn-warning"
                                href="#"
+                               th:if="${@perm.show('BTN.INVOICE_ITEM.EDIT')}"
                                onclick="openEditModal(this)">✏️</a>
                             <a class="btn btn-sm btn-danger"
                                href="#"
+                               th:if="${@perm.show('BTN.INVOICE_ITEM.DELETE')}"
                                onclick="openDeleteModal(this)">🗑️</a>
                         </td>
                     </tr>
@@ -205,8 +207,6 @@
         </div>
     </div>
 </div>
-
-
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>

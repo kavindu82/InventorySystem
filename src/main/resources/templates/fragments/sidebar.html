@@ -8,21 +8,29 @@
             <li class="nav-item mt-2">
                 <span class="fw-bold">ITEM</span>
                 <ul class="nav flex-column ms-3">
-                    <li><a class="nav-link" th:href="@{/item/add}">Add Item</a></li>
-                    <li><a class="nav-link" th:href="@{/item/invoice}">Add Invoice Item</a></li>
+                    <li th:if="${@perm.show('SIDENAV.ITEM')}">
+                        <a class="nav-link" th:href="@{/item/add}">Add Item</a>
+                    </li>
+                    <li th:if="${@perm.show('SIDENAV.INVOICEITEM')}">
+                        <a class="nav-link" th:href="@{/item/invoice}">Add Invoice Item</a>
+                    </li>
                 </ul>
             </li>
             <li class="nav-item mt-2">
                 <span class="fw-bold">SUPPLIER</span>
                 <ul class="nav flex-column ms-3">
-                    <li><a class="nav-link" th:href="@{/supplier/add}">Add Supplier</a></li>
+                    <li th:if="${@perm.show('SIDENAV.SUPPLIER')}">
+                        <a class="nav-link" th:href="@{/supplier/add}">Add Supplier</a>
+                    </li>
                 </ul>
             </li>
             <li class="nav-item mt-3">
                 <span class="fw-bold">SALES</span>
                 <ul class="nav flex-column ms-3">
-                    <li><a class="nav-link" th:href="@{/sales/add}">Add Sale</a></li>
-                    <li >
+                    <li th:if="${@perm.show('SIDENAV.SALES')}">
+                        <a class="nav-link" th:href="@{/sales/add}">Add Sale</a>
+                    </li>
+                    <li th:if="${@perm.show('SIDENAV.REPORTS')}">
                         <a class="nav-link" th:href="@{/sales/reports}">Sales Reports</a>
                     </li>
                 </ul>
@@ -30,14 +38,16 @@
             <li class="nav-item mt-3">
                 <span class="fw-bold">QUOTATION</span>
                 <ul class="nav flex-column ms-3">
-                    <li><a class="nav-link" th:href="@{/quotation}">Add Quotation</a></li>
+                    <li th:if="${@perm.show('SIDENAV.QUOTATION')}">
+                        <a class="nav-link" th:href="@{/quotation}">Add Quotation</a>
+                    </li>
                 </ul>
             </li>
-            <li class="nav-item mt-3">
-             <span class="fw-bold"> Permissions </span>
-                <li sec:authorize="hasRole('ADMIN')">
-                   <a class="nav-link" href="/admin/permissions">User Permissions</a>
-                </li>
+            <li class="nav-item mt-3" sec:authorize="hasRole('ADMIN')">
+                <span class="fw-bold">PERMISSIONS</span>
+                <ul class="nav flex-column ms-3">
+                    <li><a class="nav-link" th:href="@{/admin/permissions}">User Permissions</a></li>
+                </ul>
             </li>
         </ul>
     </nav>
