@@ -1,72 +1,181 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>Permissions</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Match add_sale.html: Bootstrap & Select2 via CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
+
+    <!-- Reuse your theme (header/sidebar colors, etc.) -->
+    <link rel="stylesheet" th:href="@{/css/permission.css}">
     <style>
-        /* Simple modern switch */
-        .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; inset: 0; background: #ddd; transition: .2s; border-radius: 28px; }
-        .slider:before { position: absolute; content: ""; height: 22px; width: 22px; left: 3px; bottom: 3px; background: white; transition: .2s; border-radius: 50%; }
-        input:checked + .slider { background: #0d6efd; }
-        input:checked + .slider:before { transform: translateX(22px); }
-        .feature-key { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+        /* Page-specific tweaks */
+        .sticky-actions { position: sticky; top: 0; z-index: 2; background: #fff; padding: .75rem 0; }
+        .feature-row { display:flex; align-items:center; justify-content:space-between; padding:.5rem 0; border-bottom:1px dashed #eee; }
+        .group-title { font-weight:600; margin-top:1rem; }
+        .content-wrap { width: 100%; }
     </style>
 </head>
-<body class="container py-4">
-<h3 class="mb-4">Permissions</h3>
+<body>
 
-<div class="table-responsive">
-    <table class="table align-middle">
-        <thead>
-        <tr>
-            <th>Feature</th>
-            <th class="text-center">Manager</th>
-            <th class="text-center">Staff</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="f : ${features}">
-            <td class="feature-key" th:text="${f}"></td>
-            <!-- Manager toggle -->
-            <td class="text-center">
-                <label class="switch">
-                    <input type="checkbox"
-                           th:attr="data-role='MANAGER',data-feature=${f}"
-                           th:checked="${manager[f]}">
-                    <span class="slider"></span>
-                </label>
-            </td>
-            <!-- Staff toggle -->
-            <td class="text-center">
-                <label class="switch">
-                    <input type="checkbox"
-                           th:attr="data-role='STAFF',data-feature=${f}"
-                           th:checked="${staff[f]}">
-                    <span class="slider"></span>
-                </label>
-            </td>
-        </tr>
-        </tbody>
-    </table>
+<!-- Header (add an id so we can measure it if needed) -->
+<div th:replace="~{fragments/header :: appHeader}" id="appHeader"></div>
+
+<!-- Sidebar + Content (new wrapper class main-shell) -->
+<div class="main-shell d-flex">
+    <div class="sidebar-wrap" th:replace="~{fragments/sidebar :: appSidebar}"></div>
+
+    <!-- Make content column non-scrolling except its inner body -->
+    <main class="content-wrap d-flex flex-column flex-grow-1">
+        <!-- Scrolls inside this panel -->
+        <div class="permission-scroll container py-3">
+            <h2 class="mb-3">User Permissions</h2>
+
+            <ul class="nav nav-tabs" id="roleTabs" role="tablist">
+            <li class="nav-item" role="presentation" th:each="r : ${roles}">
+                <button class="nav-link" th:classappend="${r==defaultRole} ? ' active'"
+                        th:id="${'tab-'+r}" data-bs-toggle="tab"
+                        th:data-bs-target="${'#pane-'+r}" type="button" role="tab"
+                        th:aria-controls="${'pane-'+r}" th:aria-selected="${r==defaultRole}"
+                        th:text="${r}">ROLE</button>
+            </li>
+        </ul>
+
+            <div class="d-flex gap-2 align-items-center mt-2">
+                <input id="search" type="search" class="form-control" placeholder="🔍 Search features by name/key...">
+                <button id="resetRole" class="btn btn-outline-danger btn-sm">Reset Role</button>
+            </div>
+
+            <div class="tab-content mt-3" id="roleTabContent" th:with="defaultRole=${defaultRole}">
+                <div class="tab-pane fade show active" th:each="r : ${roles}"
+                     th:id="${'pane-'+r}" role="tabpanel" th:classappend="${r==defaultRole}? ' show active'">
+                    <div class="accordion" th:id="${'acc-'+r}"></div>
+                </div>
+            </div>
+        </div>
+    </main>
 </div>
 
-<script>
-    document.addEventListener('change', (e) => {
-        const el = e.target;
-        if (el.matches('input[type="checkbox"][data-role][data-feature]')) {
-            const role = el.getAttribute('data-role');
-            const feature = el.getAttribute('data-feature');
-            const visible = el.checked;
+<!-- Match add_sale.html JS order: jQuery -> Select2 -> page JS -> Bootstrap bundle -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
-            fetch('/admin/permissions/toggle', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: new URLSearchParams({ role, feature, visible })
-            }).catch(() => { el.checked = !visible; alert('Failed to update'); });
+<!-- Inline page logic (so you don’t need a separate /js file yet) -->
+<script>
+    const CATS = ['SIDENAV','BUTTON','FIELD','DROPDOWN'];
+
+    function render(role, data){
+        const byCat = {};
+        data.forEach(f=>{
+            if(!byCat[f.category]) byCat[f.category] = {};
+            const g = f.groupName || 'General';
+            if(!byCat[f.category][g]) byCat[f.category][g] = [];
+            byCat[f.category][g].push(f);
+        });
+
+        const acc = $('#acc-'+role).empty();
+        for(const cat of CATS){
+            if(!byCat[cat]) continue;
+            const catId = `cat-${role}-${cat}`;
+            const card = $(`
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="h-${catId}">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#c-${catId}">
+                ${cat}
+              </button>
+            </h2>
+            <div id="c-${catId}" class="accordion-collapse collapse show">
+              <div class="accordion-body"></div>
+            </div>
+          </div>
+        `);
+            const body = card.find('.accordion-body');
+
+            for(const group in byCat[cat]){
+                body.append(`
+            <div class="group-title">${group}
+              <div class="float-end">
+                <button class="btn btn-sm btn-outline-secondary me-1" data-bulk="show" data-role="${role}" data-cat="${cat}" data-group="${group}">Show all</button>
+                <button class="btn btn-sm btn-outline-secondary" data-bulk="hide" data-role="${role}" data-cat="${cat}" data-group="${group}">Hide all</button>
+              </div>
+            </div>
+          `);
+                byCat[cat][group].forEach(f=>{
+                    const row = $(`
+              <div class="feature-row" data-role="${role}" data-key="${f.featureKey}" data-label="${f.label}" data-cat="${cat}" data-group="${group}">
+                <div>
+                  <div><strong>${f.label}</strong> <small class="text-muted">(${f.featureKey})</small></div>
+                  ${f.description ? `<div class="text-muted small">${f.description}</div>` : ''}
+                </div>
+                <div class="form-check form-switch">
+                  <input class="form-check-input feature-toggle" type="checkbox" ${f.visible?'checked':''}>
+                </div>
+              </div>
+            `);
+                    body.append(row);
+                });
+            }
+            acc.append(card);
+        }
+    }
+
+    async function loadRole(role){
+        const res = await fetch(`/api/admin/permissions?role=${role}`);
+        const data = await res.json();
+        render(role, data);
+    }
+
+    function currentRole(){
+        return $('.nav-link.active').text().trim();
+    }
+
+    $(document).on('shown.bs.tab', 'button[data-bs-toggle="tab"]', function(){
+        loadRole($(this).text().trim());
+    });
+
+    $(document).on('change', '.feature-toggle', async function(){
+        const row = $(this).closest('.feature-row');
+        const role = row.data('role');
+        const key = row.data('key');
+        const visible = this.checked;
+        await fetch('/api/admin/permissions', {
+            method:'PUT', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({role, featureKey:key, visible})
+        });
+    });
+
+    $('#resetRole').on('click', async ()=>{
+        const role = currentRole();
+        if(confirm(`Reset visibility for ${role} to defaults (all visible)?`)){
+            await fetch(`/api/admin/permissions/reset?role=${role}`, {method:'POST'});
+            loadRole(role);
         }
     });
+
+    $('#search').on('input', function(){
+        const q = this.value.toLowerCase();
+        $('.feature-row').each(function(){
+            const txt = ($(this).data('label')+' '+$(this).data('key')).toLowerCase();
+            $(this).toggle(txt.includes(q));
+        });
+    });
+
+    $(function(){
+        // load default tab on first render (same idea as your add_sale init patterns :contentReference[oaicite:2]{index=2})
+        const firstActive = $('.nav-link.active').text().trim();
+        if (firstActive) loadRole(firstActive);
+    });
+
+    function setHeaderH() {
+        const h = document.getElementById('appHeader')?.offsetHeight || 72;
+        document.documentElement.style.setProperty('--header-h', h + 'px');
+    }
+    addEventListener('load', setHeaderH);
+    addEventListener('resize', setHeaderH);
 </script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -48,10 +48,10 @@
                         <td th:text="${quotation.saleDate}">2025-07-17</td>
                         <td th:text="${quotation.finalAmount}">0.00</td>
                         <td>
-                            <a class="btn btn-sm btn-warning" href="#" th:attr="data-id=${quotation.id}" onclick="editQuotation(this)">✏️</a>
-                            <a class="btn btn-sm btn-info" href="#" th:attr="data-id=${quotation.id}" onclick="viewQuotation(this)">👁️ </a>
-                            <a class="btn btn-sm btn-success" href="#" th:attr="data-id=${quotation.id}" onclick="openConvertQuotationModal(this)" title="Convert to Sale">💵</a>
-                            <a class="btn btn-sm btn-danger" href="#" th:attr="data-id=${quotation.id}" onclick="openQuotationDeleteModal(this)">🗑️ </a>
+                            <a class="btn btn-sm btn-warning" href="#" th:if="${@perm.show('BTN.QUOTATION.EDIT')}" th:attr="data-id=${quotation.id}" onclick="editQuotation(this)">✏️</a>
+                            <a class="btn btn-sm btn-info" href="#" th:if="${@perm.show('BTN.QUOTATION.VIEW')}" th:attr="data-id=${quotation.id}" onclick="viewQuotation(this)">👁️ </a>
+                            <a class="btn btn-sm btn-success" href="#" th:if="${@perm.show('BTN.QUOTATION.CONVERT')}" th:attr="data-id=${quotation.id}" onclick="openConvertQuotationModal(this)" title="Convert to Sale">💵</a>
+                            <a class="btn btn-sm btn-danger" href="#" th:if="${@perm.show('BTN.QUOTATION.DELETE')}" th:attr="data-id=${quotation.id}" onclick="openQuotationDeleteModal(this)">🗑️ </a>
                         </td>
                      </tr>
                     </tbody>

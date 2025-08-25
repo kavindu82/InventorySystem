@@ -24,7 +24,7 @@
             <span th:if="${param.success[0] == 'delete'}">🗑️ Sale deleted successfully!</span>
         </div>
 
-        <button class="btn btn-success mb-3" onclick="openAddSaleModal()">➕ Add Sale</button>
+            <button class="btn btn-success mb-3" th:if="${@perm.show('BTN.SALES.ADD')}" onclick="openAddSaleModal()">➕ Add Sale</button>
 
         <!-- ✅ Search Sales -->
         <input type="text" id="salesSearch" class="form-control mb-3" placeholder="🔍 Search by Client or Invoice">
@@ -50,9 +50,9 @@
                 <td th:text="${sale.finalAmount}"></td>
                 <td th:text="${sale.paymentStatus}"></td>
                 <td>
-                    <a class="btn btn-sm btn-warning" href="#" th:attr="data-id=${sale.id}" onclick="editSale(this)">✏️</a>
-                    <a class="btn btn-sm btn-danger" href="#" th:attr="data-id=${sale.id}" onclick="openSalesDeleteModal(this)">🗑️</a>
-                    <a class="btn btn-sm btn-primary" href="#" th:attr="data-id=${sale.id}" onclick="viewInvoice(this)">📄</a>
+                    <a class="btn btn-sm btn-warning" href="#" th:if="${@perm.show('BTN.SALES.EDIT')}" th:attr="data-id=${sale.id}" onclick="editSale(this)">✏️</a>
+                    <a class="btn btn-sm btn-danger" href="#" th:if="${@perm.show('BTN.SALES.DELETE')}"  th:attr="data-id=${sale.id}"  onclick="openSalesDeleteModal(this)" >🗑️</a>
+                    <a class="btn btn-sm btn-primary" href="#" th:if="${@perm.show('BTN.SALES.VIEW')}" th:attr="data-id=${sale.id}" onclick="viewInvoice(this)">📄</a>
                 </td>
             </tr>
             </tbody>

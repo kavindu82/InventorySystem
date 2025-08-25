@@ -63,7 +63,7 @@
 
     <!-- ✅ Search Input -->
     <div class="mb-3">
-      <input type="text" id="searchInput" class="form-control" placeholder="Search by Item No">
+      <input type="text" id="searchInput" class="form-control" placeholder="Search by Item No ,item Name">
     </div>
 
     <!-- ✅ Item Table with Scroll -->
@@ -92,11 +92,12 @@
                  class="btn btn-sm btn-warning"
                  data-bs-toggle="modal"
                  data-bs-target="#editModal"
+                 th:if="${@perm.show('BTN.ITEM.EDIT')}"
                  th:attr="data-id=${i.id}, data-itemno=${i.itemNo}, data-itemname=${i.itemName}, data-itemtype=${i.itemType}"
                  onclick="fillEditModal(this)">✏️</a>
 
-
               <a href="#" class="btn btn-sm btn-danger"
+                 th:if="${@perm.show('BTN.ITEM.DELETE')}"
                  th:attr="data-id=${i.id}"
                  onclick="prepareDelete(event, this)">🗑️</a>
             </td>

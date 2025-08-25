@@ -76,9 +76,11 @@
                         <td>
                             <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editModal"
                                     th:attr="data-code=${s.supplierCode}, data-name=${s.supplierName}, data-address=${s.supplierAddress}"
+                                    th:if="${@perm.show('BTN.SUPPLIER.EDIT')}"
                                     onclick="fillEditModal(this)">✏️</button>
                             <button class="btn btn-sm btn-danger"
                                     th:attr="data-code=${s.supplierCode}"
+                                    th:if="${@perm.show('BTN.SUPPLIER.DELETE')}"
                                     onclick="prepareDeleteSupplier(event, this)">🗑️</button>
                         </td>
                     </tr>

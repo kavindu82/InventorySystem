@@ -1,0 +1,93 @@
+.header {
+    background-color: #ffcc00;
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.header .logo img {
+    height: 60px;
+    width: 60px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.fade-out {
+    animation: fadeOut 4s forwards;
+}
+@keyframes fadeOut {
+    0% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { opacity: 0; display: none; }
+}
+.sidebar {
+    background-color: #fff8cc;
+    height: 100vh;
+    width: 200px;
+}
+
+.sidebar .nav-link {
+    color: #000;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.sidebar .nav-link:hover {
+    background-color: #ffe680;
+    border-radius: 5px;
+}
+
+.modal fade1 {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    width: 210mm;
+    height: 297mm;
+    background: #fff;
+    color: #000;
+}
+
+:root { --header-h: 72px; } /* adjust if your header is taller */
+
+.main-shell{
+    height: calc(100vh - var(--header-h));
+    overflow: hidden;                 /* body must NOT scroll */
+}
+
+.sidebar-wrap{
+    width: 260px;                     /* match your sidebar width */
+    overflow-y: auto;                 /* sidebar scrolls independently */
+    position: relative;
+    z-index: 5;                       /* keeps sidebar above page background */
+}
+
+.content-wrap{
+    display: flex;
+    flex-direction: column;
+    min-width: 0;                     /* important in flex layouts */
+    min-height: 0;
+    overflow: hidden;                 /* prevent body scroll here */
+}
+
+.permission-scroll{
+    flex: 1;
+    min-height: 0;                    /* allow child to shrink and scroll */
+    overflow-y: auto;                 /* the ONLY vertical scroller */
+    position: relative;
+    isolation: isolate;               /* creates a clean stacking context */
+}
+
+/* The sticky search bar */
+.sticky-actions{
+    top: 0;
+    z-index: 10;                      /* above accordions within content */
+    background: #fff;
+    border-bottom: 1px solid #eee;
+    padding: .5rem 0;
+}
+
+
+/* Optional: collapse big sections by default to shorten the page initially */
+.accordion .accordion-collapse {
+    /* remove 'show' class from HTML to make them collapsed by default */
+}
