@@ -163,11 +163,11 @@
                         <td th:text="${inv.itemName}"></td>
                         <td th:text="${inv.itemType}"></td>
                         <td th:text="${inv.supplierName}"></td>
-                        <td th:text="${inv.quantity}"></td>
+                        <td class="qty-col" th:text="${inv.quantity}"></td>
                         <td th:text="${inv.importSizeAndDimension}"></td>
                         <td th:text="${inv.currency + ' ' + #numbers.formatDecimal(inv.originalCostPrice, 1, 'COMMA', 2, 'POINT')}"></td>
                         <td th:text="${#numbers.formatDecimal(inv.costPrice, 1, 'COMMA', 2, 'POINT')}"></td>
-                        <td th:text="${#numbers.formatDecimal(inv.sellingPrice, 1, 'COMMA', 2, 'POINT')}"></td>
+                        <td class="qty-col" th:text="${#numbers.formatDecimal(inv.sellingPrice, 1, 'COMMA', 2, 'POINT')}"></td>
                         <td th:text="${inv.lowQuantity}"></td>
                         <td th:text="${inv.arrivalDate}"></td>
                         <td th:text="${#numbers.formatDecimal(inv.amount, 1, 'COMMA', 2, 'POINT')}"></td>

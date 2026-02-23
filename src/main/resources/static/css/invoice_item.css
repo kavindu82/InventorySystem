@@ -67,3 +67,25 @@ body {
     color: white;
     z-index: 1;
 }
+
+#itemTable {
+    table-layout: fixed;
+    width: 100%;
+}
+
+#itemTable th,
+#itemTable td {
+    vertical-align: middle;
+}
+
+#itemTable td:nth-child(6) {
+    background-color: #E9EB7C;
+    font-weight: bold;
+    text-align: center;
+}
+
+#itemTable td:nth-child(10) {
+    background-color: #E9EB7C;
+    font-weight: bold;
+    text-align: center;
+}

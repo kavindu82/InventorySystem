@@ -15,9 +15,7 @@ public class InventoryManagementSystemApplication {
 
 	@PostConstruct
 	public void printDbUrl() {
-		System.out.println("MYSQLHOST=" + System.getenv("MYSQLHOST"));
-		System.out.println("MYSQLPORT=" + System.getenv("MYSQLPORT"));
-		System.out.println("MYSQLDATABASE=" + System.getenv("MYSQLDATABASE"));
+
 	}
 
 }

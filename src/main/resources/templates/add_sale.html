@@ -29,8 +29,6 @@
         <!-- ✅ Search Sales -->
         <input type="text" id="salesSearch" class="form-control mb-3" placeholder="🔍 Search by Client or Invoice">
 
-        <!-- ✅ Sales Table -->
-
         <table class="table table-bordered table-hover">
             <thead class="table-dark">
             <tr>
@@ -187,7 +185,6 @@
                 <table class="table table-bordered items-table">
                     <thead class="table-light">
                     <tr>
-                        <th>Item No</th>
                         <th>Item Name</th>
                         <th>Quantity</th>
                         <th>Selling Price</th>
@@ -196,7 +193,6 @@
                     </thead>
                     <tbody>
                     <tr th:each="item : ${sale.items}">
-                        <td th:text="${item.itemNo}"></td>
                         <td th:text="${item.itemName}"></td>
                         <td th:text="${item.quantity}"></td>
                         <td th:text="${item.sellingPrice}"></td>
